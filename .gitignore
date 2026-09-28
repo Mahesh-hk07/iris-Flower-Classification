@@ -1,0 +1,25 @@
+# Python Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment variables
+.env
+.env.local
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Flask instance folder
+instance/
+
+# Note: The model file 'models/flower_classifier.pt' is tracked as part of the submission.

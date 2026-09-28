@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FloraVision AI | Botanical Flower Image Classifier</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌸</text></svg>">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <!-- Ambient background glow elements -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+
+  <div class="app-layout">
+    <!-- Header Section -->
+    <header class="app-header">
+      <div class="brand-badge">
+        <span class="pulse-dot"></span>
+        <span>Deep Learning • MobileNetV2 Vision CNN</span>
+      </div>
+      <h1 class="main-title">FloraVision <span class="gradient-text">AI</span></h1>
+      <p class="main-subtitle">
+        Real-world botanical flower image classification powered by transfer learning, verified taxonomic metadata, and conservative out-of-distribution rejection.
+      </p>
+
+      <!-- Supported Species Badges -->
+      <div class="supported-taxonomy-bar">
+        <span class="taxonomy-title">Trained Botanical Classes:</span>
+        <div class="taxonomy-chips">
+          <span class="tax-chip chip-hibiscus">🌺 Hibiscus <em>(Malvaceae)</em></span>
+          <span class="tax-chip chip-rose">🌹 Rose <em>(Rosaceae)</em></span>
+          <span class="tax-chip chip-sunflower">🌻 Sunflower <em>(Asteraceae)</em></span>
+          <span class="tax-chip chip-lotus">🪷 Lotus <em>(Nelumbonaceae)</em></span>
+          <span class="tax-chip chip-iris">🌸 Iris <em>(Iridaceae)</em></span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Application Grid -->
+    <main class="app-grid">
+      <!-- Left Column: Input & Upload Controls -->
+      <section class="card input-card">
+        <div class="card-header">
+          <h2>1. Select or Upload Flower Photo</h2>
+          <p class="card-desc">Choose a verified sample or upload any JPG, PNG, or WEBP image.</p>
+        </div>
+
+        <!-- Visual Sample Gallery with real thumbnails -->
+        <div class="sample-gallery-container">
+          <label class="section-micro-label">Quick Test Botanical Samples:</label>
+          <div class="sample-grid">
+            <button type="button" class="sample-card" data-src="{{ url_for('static', filename='samples/sample_rose.jpg') }}" data-name="sample_rose.jpg">
+              <img src="{{ url_for('static', filename='samples/sample_rose.jpg') }}" alt="Rose Sample" class="sample-thumb" loading="lazy">
+              <div class="sample-meta">
+                <span class="sample-name">🌹 Rose</span>
+                <span class="sample-family">Rosaceae</span>
+              </div>
+            </button>
+
+            <button type="button" class="sample-card" data-src="{{ url_for('static', filename='samples/sample_hibiscus.jpg') }}" data-name="sample_hibiscus.jpg">
+              <img src="{{ url_for('static', filename='samples/sample_hibiscus.jpg') }}" alt="Hibiscus Sample" class="sample-thumb" loading="lazy">
+              <div class="sample-meta">
+                <span class="sample-name">🌺 Hibiscus</span>
+                <span class="sample-family">Malvaceae</span>
+              </div>
+            </button>
+
+            <button type="button" class="sample-card" data-src="{{ url_for('static', filename='samples/sample_sunflower.jpg') }}" data-name="sample_sunflower.jpg">
+              <img src="{{ url_for('static', filename='samples/sample_sunflower.jpg') }}" alt="Sunflower Sample" class="sample-thumb" loading="lazy">
+              <div class="sample-meta">
+                <span class="sample-name">🌻 Sunflower</span>
+                <span class="sample-family">Asteraceae</span>
+              </div>
+            </button>
+
+            <button type="button" class="sample-card" data-src="{{ url_for('static', filename='samples/sample_lotus.jpg') }}" data-name="sample_lotus.jpg">
+              <img src="{{ url_for('static', filename='samples/sample_lotus.jpg') }}" alt="Lotus Sample" class="sample-thumb" loading="lazy">
+              <div class="sample-meta">
+                <span class="sample-name">🪷 Lotus</span>
+                <span class="sample-family">Nelumbonaceae</span>
+              </div>
+            </button>
+
+            <button type="button" class="sample-card" data-src="{{ url_for('static', filename='samples/sample_iris.jpg') }}" data-name="sample_iris.jpg">
+              <img src="{{ url_for('static', filename='samples/sample_iris.jpg') }}" alt="Iris Sample" class="sample-thumb" loading="lazy">
+              <div class="sample-meta">
+                <span class="sample-name">🌸 Iris</span>
+                <span class="sample-family">Iridaceae</span>
+              </div>
+            </button>
+
+            <button type="button" class="sample-card sample-uncertain" data-src="{{ url_for('static', filename='samples/grey_noise_test.jpg') }}" data-name="grey_noise_test.jpg">
+              <img src="{{ url_for('static', filename='samples/grey_noise_test.jpg') }}" alt="Uncertain Sample" class="sample-thumb" loading="lazy">
+              <div class="sample-meta">
+                <span class="sample-name">❓ Non-Flower</span>
+                <span class="sample-family">Test OOD Rejection</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div class="divider">
+          <span>OR UPLOAD CUSTOM IMAGE</span>
+        </div>
+
+        <!-- Interactive Drag-and-Drop Area -->
+        <form id="upload-form" class="upload-form" novalidate>
+          <div id="drop-zone" class="drop-zone">
+            <input type="file" id="image-input" name="image" accept=".jpg,.jpeg,.png,.webp" class="file-input-hidden" aria-label="Upload flower photo">
+            
+            <!-- Default Empty Dropzone Prompt -->
+            <div id="drop-prompt" class="drop-prompt">
+              <div class="upload-icon-wrapper">
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+              </div>
+              <p class="drop-primary-text">Drag & drop flower photo here</p>
+              <p class="drop-sub-text">or <span class="browse-link">browse files</span> on your computer</p>
+              <div class="format-chips">
+                <span>JPG</span>
+                <span>PNG</span>
+                <span>WEBP</span>
+                <span>Max 10 MB</span>
+              </div>
+            </div>
+
+            <!-- Live Image Preview Card -->
+            <div id="preview-wrapper" class="preview-wrapper" style="display: none;">
+              <div class="preview-stage">
+                <img id="image-preview" src="" alt="Selected Flower Preview" class="preview-img">
+                <button type="button" id="btn-change-image" class="btn-change-photo" title="Choose a different photo">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                    <circle cx="12" cy="13" r="4"></circle>
+                  </svg>
+                  Change Image
+                </button>
+              </div>
+              <div class="preview-file-bar">
+                <span id="preview-filename" class="preview-name">flower.jpg</span>
+                <span id="preview-filesize" class="preview-size">0 KB</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="form-actions">
+            <button type="submit" id="btn-analyze" class="btn-primary" disabled>
+              <span class="btn-icon">⚡</span>
+              <span class="btn-text">Analyze Flower with CNN</span>
+              <span class="btn-spinner" style="display: none;"></span>
+            </button>
+            <button type="button" id="btn-reset" class="btn-secondary">Clear</button>
+          </div>
+        </form>
+
+        <!-- Live Status & Error Alerts -->
+        <div id="error-box" class="alert-box alert-error" style="display: none;">
+          <div class="alert-icon">⚠️</div>
+          <div class="alert-content">
+            <strong>Upload Error</strong>
+            <p id="error-message"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Model Inference Results -->
+      <section class="card results-card">
+        <div class="card-header">
+          <h2>2. Model Inference & Botanical Taxonomy</h2>
+          <p class="card-desc">Real-time PyTorch MobileNetV2 classification outputs and verified taxonomy.</p>
+        </div>
+
+        <!-- Initial Placeholder State -->
+        <div id="placeholder-box" class="result-placeholder">
+          <div class="placeholder-art">
+            <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="m4.93 4.93 4.24 4.24"></path>
+              <path d="m14.83 9.17 4.24-4.24"></path>
+              <path d="m14.83 14.83 4.24 4.24"></path>
+              <path d="m9.17 14.83-4.24 4.24"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </div>
+          <h3>Awaiting Flower Input</h3>
+          <p>Select one of the sample botanical photos on the left or upload your own flower image to run deep vision inference.</p>
+        </div>
+
+        <!-- Analyzing / Loading Spinner -->
+        <div id="loading-box" class="result-loading" style="display: none;">
+          <div class="radar-spinner">
+            <div class="radar-sweep"></div>
+          </div>
+          <h3>Analyzing Flower Pixels...</h3>
+          <p class="loading-sub">Preprocessing to 224&times;224 tensor, normalizing with ImageNet weights, and computing MobileNetV2 feature embeddings.</p>
+        </div>
+
+        <!-- Success Result Card -->
+        <div id="result-success-box" class="result-success" style="display: none;">
+          <!-- Status Banner -->
+          <div class="status-banner banner-confirmed">
+            <span class="status-indicator"></span>
+            <span class="status-title">High-Confidence Identification</span>
+            <span class="status-badge" id="res-badge">Verified Match</span>
+          </div>
+
+          <!-- Hero Prediction Box -->
+          <div class="prediction-hero">
+            <div class="hero-left">
+              <span class="hero-label">Identified Flower Species</span>
+              <h3 id="res-species-name" class="hero-species">Rose</h3>
+              <p id="res-scientific-name" class="hero-scientific">Rosa chinensis / Rosa spp.</p>
+            </div>
+            <div class="hero-right">
+              <span class="hero-label">Model Probability</span>
+              <div class="confidence-big">
+                <span id="res-confidence-pct">93.9%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Confidence Meter Bar -->
+          <div class="confidence-track-wrapper">
+            <div class="track-header">
+              <span>CNN Confidence Score</span>
+              <span id="res-confidence-sub">93.92% probability</span>
+            </div>
+            <div class="confidence-bar-outer">
+              <div id="res-confidence-bar" class="confidence-bar-inner" style="width: 93%;"></div>
+            </div>
+          </div>
+
+          <!-- Verified Botanical Taxonomy Card -->
+          <div id="botanical-info-card" class="botanical-card">
+            <div class="botanical-header">
+              <div class="botanical-title">
+                <span class="botanical-icon">🌿</span>
+                <span>Verified Botanical Taxonomy &amp; Profile</span>
+              </div>
+              <span class="source-tag">Source: metadata/flower_metadata.json</span>
+            </div>
+
+            <div class="botanical-grid">
+              <div class="b-item">
+                <span class="b-label">Botanical Family</span>
+                <span id="b-family" class="b-value family-pill">Malvaceae</span>
+              </div>
+              <div class="b-item">
+                <span class="b-label">Taxonomic Order</span>
+                <span id="b-order" class="b-value">Malvales</span>
+              </div>
+              <div class="b-item full-width">
+                <span class="b-label">Full Scientific Hierarchy</span>
+                <span id="b-full-taxonomy" class="b-taxonomy-mono">Kingdom: Plantae • Division: Tracheophyta • Class: Magnoliopsida</span>
+              </div>
+              <div class="b-item full-width">
+                <span class="b-label">Common &amp; Vernacular Names</span>
+                <p id="b-common-names" class="b-text"></p>
+              </div>
+              <div class="b-item full-width">
+                <span class="b-label">Floral Anatomy &amp; Distinguishing Traits</span>
+                <p id="b-characteristics" class="b-text"></p>
+              </div>
+              <div class="b-item full-width">
+                <span class="b-label">Native Habitat, Climate &amp; Soil</span>
+                <p id="b-habitat" class="b-text"></p>
+              </div>
+              <div class="b-item full-width">
+                <span class="b-label">Cultural, Culinary &amp; Medicinal Uses</span>
+                <p id="b-cultural" class="b-text"></p>
+              </div>
+              <div class="b-item full-width highlight-item">
+                <span class="b-label">Key Diagnostic Differentiation (Vs. Lookalike Species)</span>
+                <p id="b-diagnostic" class="b-text"></p>
+              </div>
+            </div>
+
+            <!-- In-Depth 10 to 15 Line Botanical Profile -->
+            <div class="comprehensive-section">
+              <h4 class="comp-title">📖 In-Depth Botanical Profile &amp; Scientific Analysis (10–15 Points)</h4>
+              <ul id="b-summary-list" class="comp-list">
+                <!-- Dynamically populated with 10-15 detailed lines -->
+              </ul>
+            </div>
+          </div>
+
+          <!-- Probability Distribution breakdown -->
+          <div class="prob-section">
+            <h4 class="prob-section-title">Model Probability Distribution (All Classes)</h4>
+            <div id="prob-list" class="prob-list">
+              <!-- Dynamically populated rows -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Uncertain / Out-of-Distribution Warning Card -->
+        <div id="result-uncertain-box" class="result-uncertain" style="display: none;">
+          <div class="status-banner banner-warning">
+            <span class="status-indicator warning-dot"></span>
+            <span class="status-title">Out-of-Distribution / Ambiguous Input</span>
+            <span class="status-badge badge-warning">Rejected</span>
+          </div>
+
+          <div class="uncertain-body">
+            <div class="uncertain-icon">❓</div>
+            <h3>Uncertain Prediction (Below 55% Threshold)</h3>
+            <p id="uncertain-message" class="uncertain-desc">
+              The highest model probability is below the conservative 55.0% threshold. This image appears to be an unsupported flower species or non-flower content.
+            </p>
+            <div class="notice-callout">
+              <strong>Botanical Guard Applied:</strong>
+              <p>Botanical family and taxonomic attributes have been suppressed to prevent misleading classifications.</p>
+            </div>
+
+            <div class="prob-section">
+              <h4 class="prob-section-title">Diffuse Probability Distribution (Model Uncertainty)</h4>
+              <div id="uncertain-prob-list" class="prob-list">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Deep Learning Architecture Explainer -->
+    <section class="card explainer-card">
+      <div class="card-header">
+        <h2>Computer Vision Architecture &amp; Reliability Safeguards</h2>
+        <p class="card-desc">Understanding how the genuine MobileNetV2 transfer learning pipeline functions.</p>
+      </div>
+
+      <div class="explainer-grid">
+        <div class="exp-col">
+          <div class="exp-number">1</div>
+          <h3>Pretrained MobileNetV2</h3>
+          <p>Uses 53 inverted residual bottleneck layers pretrained on ImageNet-1K to extract spatial petal, color, and floral texture embeddings.</p>
+        </div>
+        <div class="exp-col">
+          <div class="exp-number">2</div>
+          <h3>Botanical Fine-Tuning</h3>
+          <p>Unfreezes top convolutional blocks (layers 16+) with differential learning rates to adapt high-level feature maps to real blooming flowers.</p>
+        </div>
+        <div class="exp-col">
+          <div class="exp-number">3</div>
+          <h3>Rejection Threshold</h3>
+          <p>Enforces a 40.0% confidence cutoff. Out-of-distribution inputs are rejected instead of being arbitrarily assigned to an unrelated class.</p>
+        </div>
+        <div class="exp-col">
+          <div class="exp-number">4</div>
+          <h3>Verified Taxonomy</h3>
+          <p>Botanical families (e.g. <em>Malvaceae</em> for Hibiscus, <em>Rosaceae</em> for Rose) are retrieved from local verified metadata, not hallucinated.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>FloraVision AI &bull; PyTorch Transfer Learning Computer Vision &bull; Educational Engineering Project</p>
+    </footer>
+  </div>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
