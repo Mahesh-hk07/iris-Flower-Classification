@@ -23,3 +23,4 @@ Thumbs.db
 instance/
 
 # Note: The model file 'models/flower_classifier.pt' is tracked as part of the submission.
+cloudflared.exe

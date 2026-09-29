@@ -338,7 +338,8 @@ def internal_error(error):
 
 
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
     print("[*] Starting Multi-Class Flower Image Classification Server...")
     print(f"[*] Rejection threshold set to: {CONFIDENCE_THRESHOLD * 100:.0f}%")
-    print("[*] Open your browser at: http://127.0.0.1:5000")
-    app.run(host="127.0.0.1", port=5000, debug=False)
+    print(f"[*] Server listening on port {port}")
+    app.run(host="0.0.0.0", port=port, debug=False)
