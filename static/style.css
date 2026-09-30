@@ -614,6 +614,13 @@ body {
   gap: 0.55rem;
 }
 
+.quality-tag {
+  font-weight: 700;
+  color: var(--color-forest);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
 .quality-feedback-bar.warning {
   background-color: #FFFBEB;
   border-color: #FDE68A;
@@ -1058,6 +1065,94 @@ body {
 .report-sub {
   font-size: 0.85rem;
   color: var(--color-text-light);
+}
+
+/* Expandable Botanical Dossier Accordions */
+.report-accordions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+}
+
+.report-accordion {
+  background-color: #FAFCFA;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.report-accordion[open] {
+  background-color: #FFFFFF;
+  box-shadow: var(--shadow-sm);
+  border-color: var(--color-emerald-light);
+}
+
+.accordion-summary {
+  cursor: pointer;
+  padding: 1rem 1.35rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--color-forest-dark);
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  user-select: none;
+  list-style: none;
+  background-color: #F8FAF8;
+  transition: var(--transition);
+}
+
+.accordion-summary::-webkit-details-marker {
+  display: none;
+}
+
+.accordion-summary:hover {
+  background-color: var(--color-sage-tint);
+  color: var(--color-emerald);
+}
+
+.acc-icon {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.acc-title {
+  flex: 1;
+  letter-spacing: 0.2px;
+}
+
+.acc-chevron {
+  font-size: 1rem;
+  color: var(--color-text-light);
+  transition: transform 0.22s ease;
+}
+
+.report-accordion[open] .acc-chevron {
+  transform: rotate(180deg);
+  color: var(--color-emerald);
+}
+
+.accordion-content {
+  padding: 1.25rem 1.35rem;
+  border-top: 1px solid var(--color-border-subtle);
+  background-color: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.acc-lead {
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--color-forest);
+  margin-bottom: 0.35rem;
+}
+
+.acc-subtext {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--color-text-muted);
 }
 
 .report-sections {

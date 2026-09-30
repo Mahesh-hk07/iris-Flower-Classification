@@ -176,8 +176,9 @@
               </div>
             </div>
 
-            <!-- Image Quality Diagnostics Bar -->
+            <!-- Technical Image Quality Diagnostics Bar (Objective Checks, Not AI) -->
             <div id="quality-feedback-box" class="quality-feedback-bar" style="display: none;">
+              <span class="quality-tag">Technical Check:</span>
               <span id="quality-icon" class="quality-icon">🔍</span>
               <span id="quality-text" class="quality-text">Checking image dimensions &amp; exposure...</span>
             </div>
@@ -298,124 +299,183 @@
                 <span class="report-icon">📑</span>
                 <div>
                   <h4>Botanical Intelligence Report</h4>
-                  <p class="report-sub">Verified scientific taxonomy, diagnostic traits, and documented traditional information.</p>
+                  <p class="report-sub">Verified scientific taxonomy, diagnostic traits, and documented traditional information organized into expandable sections.</p>
                 </div>
               </div>
 
-              <!-- Tabbed or Structured Dossier Sections -->
-              <div class="report-sections">
-                <!-- Section 1: Overview & Botanical Identity -->
-                <div class="report-block">
-                  <h5 class="block-title">🌿 Botanical Overview</h5>
-                  <p id="rep-overview" class="block-text"></p>
-                </div>
-
-                <!-- Section 2: Key Characteristics & Morphology -->
-                <div class="report-block">
-                  <h5 class="block-title">🔍 Key Characteristics &amp; Anatomy</h5>
-                  <p id="rep-characteristics" class="block-text"></p>
-                </div>
-
-                <!-- Section 3: Geographic Distribution & Habitat -->
-                <div class="report-block">
-                  <h5 class="block-title">🌍 Geographic Distribution &amp; Habitat</h5>
-                  <p id="rep-distribution" class="block-text"></p>
-                </div>
-
-                <!-- Section 4: Ecological Importance -->
-                <div class="report-block">
-                  <h5 class="block-title">🐝 Ecological Importance &amp; Pollinators</h5>
-                  <p id="rep-ecological" class="block-text"></p>
-                </div>
-
-                <!-- Section 5: Diagnostic Differentiation -->
-                <div class="report-block highlight-block">
-                  <h5 class="block-title">🔬 Diagnostic Differentiation (Vs Lookalike Species)</h5>
-                  <p id="rep-diagnostic" class="block-text"></p>
-                </div>
-
-                <!-- Section 6: Common Uses (Categorized Badges) -->
-                <div class="report-block">
-                  <h5 class="block-title">🌱 Common Human Uses</h5>
-                  <div id="rep-uses-grid" class="uses-grid">
-                    <!-- Populated dynamically -->
-                  </div>
-                </div>
-
-                <!-- Section 7: Documented Traditional & Medicinal Information -->
-                <div class="report-block medicinal-block">
-                  <h5 class="block-title">⚕️ Documented Traditional &amp; Medicinal Context</h5>
-                  
-                  <div class="medicinal-grid">
-                    <div class="med-item">
-                      <span class="med-label">Plant Part Traditionally Used:</span>
-                      <span id="med-parts" class="med-value"></span>
-                    </div>
-                    <div class="med-item">
-                      <span class="med-label">Documented Historical Context:</span>
-                      <p id="med-traditional" class="med-desc"></p>
-                    </div>
-                    <div class="med-item">
-                      <span class="med-label">Modern Scientific Research Context:</span>
-                      <p id="med-research" class="med-desc"></p>
-                    </div>
-                    <div class="med-item">
-                      <span class="med-label">Scientific Evidence Level:</span>
-                      <p id="med-evidence" class="med-desc"></p>
-                    </div>
-                  </div>
-
-                  <!-- Mandatory Medical Disclaimer -->
-                  <div class="disclaimer-callout">
-                    <span class="disclaimer-icon">⚠️</span>
-                    <p class="disclaimer-text">
-                      <strong>Educational Notice Only:</strong> Medicinal information is provided strictly for academic and educational purposes. Documented traditional use does not establish clinical efficacy or safety. This platform does not provide medical diagnoses, treatment advice, or dosage recommendations. Always consult a qualified healthcare professional before using any plant for medicinal purposes.
+              <!-- Expandable Dossier Sections (Avoids wall of text) -->
+              <div class="report-accordions">
+                <!-- Section 1: Why This Prediction? (Explainability & Attention) -->
+                <details class="report-accordion" open>
+                  <summary class="accordion-summary">
+                    <span class="acc-icon">🔬</span>
+                    <span class="acc-title">Why This Prediction? (Neural Feature Attention)</span>
+                    <span class="acc-chevron">▾</span>
+                  </summary>
+                  <div class="accordion-content">
+                    <p class="acc-lead">
+                      Highlighted regions indicate image areas that contributed to the model's prediction.
+                    </p>
+                    <p class="acc-subtext">
+                      Gradient-weighted Class Activation Mapping (Grad-CAM) extracts spatial activations from MobileNetV2's final convolutional layer (1,280 channels) and weights them by backpropagated class gradients. <em>Notice: Grad-CAM visualizes convolutional feature attention, not biological reasoning.</em>
                     </p>
                   </div>
-                </div>
+                </details>
 
-                <!-- Section 8: In-Depth Botanical Points (10-15 Points) -->
-                <div class="report-block">
-                  <h5 class="block-title">📖 Comprehensive Botanical Analysis (10–15 Points)</h5>
-                  <ul id="rep-summary-list" class="summary-list">
-                    <!-- Populated dynamically -->
-                  </ul>
-                </div>
+                <!-- Section 2: Botanical Profile & Taxonomy -->
+                <details class="report-accordion" open>
+                  <summary class="accordion-summary">
+                    <span class="acc-icon">🌿</span>
+                    <span class="acc-title">Botanical Profile &amp; Scientific Taxonomy</span>
+                    <span class="acc-chevron">▾</span>
+                  </summary>
+                  <div class="accordion-content">
+                    <div class="report-block">
+                      <h5 class="block-title">Botanical Overview</h5>
+                      <p id="rep-overview" class="block-text"></p>
+                    </div>
+                  </div>
+                </details>
 
-                <!-- Section 9: Authoritative References -->
-                <div class="report-block sources-block">
-                  <h5 class="block-title">📚 Authoritative Botanical Sources</h5>
-                  <ul id="rep-sources-list" class="sources-list">
-                    <!-- Populated dynamically -->
-                  </ul>
-                </div>
+                <!-- Section 3: Key Characteristics & Morphology -->
+                <details class="report-accordion" open>
+                  <summary class="accordion-summary">
+                    <span class="acc-icon">🔍</span>
+                    <span class="acc-title">Key Characteristics &amp; Anatomy</span>
+                    <span class="acc-chevron">▾</span>
+                  </summary>
+                  <div class="accordion-content">
+                    <div class="report-block">
+                      <h5 class="block-title">Morphological Traits</h5>
+                      <p id="rep-characteristics" class="block-text"></p>
+                    </div>
+                    <div class="report-block highlight-block">
+                      <h5 class="block-title">Diagnostic Differentiation (Vs Lookalike Species)</h5>
+                      <p id="rep-diagnostic" class="block-text"></p>
+                    </div>
+                  </div>
+                </details>
 
-                <!-- Section 10: Model Technical Footprint -->
-                <div class="report-footer-meta">
-                  <span>Architecture: <strong>PyTorch MobileNetV2</strong></span>
-                  <span>Input Tensor: <strong>224 × 224 RGB</strong></span>
-                  <span>Trained Classes: <strong>5</strong></span>
-                  <span>Inference Device: <strong>CPU</strong></span>
-                </div>
+                <!-- Section 4: Uses & Importance -->
+                <details class="report-accordion">
+                  <summary class="accordion-summary">
+                    <span class="acc-icon">🐝</span>
+                    <span class="acc-title">Uses &amp; Importance (Ecological &amp; Human Applications)</span>
+                    <span class="acc-chevron">▾</span>
+                  </summary>
+                  <div class="accordion-content">
+                    <div class="report-block">
+                      <h5 class="block-title">Ecological Importance &amp; Pollinators</h5>
+                      <p id="rep-ecological" class="block-text"></p>
+                    </div>
+                    <div class="report-block">
+                      <h5 class="block-title">Geographic Distribution &amp; Habitat</h5>
+                      <p id="rep-distribution" class="block-text"></p>
+                    </div>
+                    <div class="report-block">
+                      <h5 class="block-title">Common Human Uses</h5>
+                      <div id="rep-uses-grid" class="uses-grid"></div>
+                    </div>
+                  </div>
+                </details>
+
+                <!-- Section 5: Traditional & Medicinal Research -->
+                <details class="report-accordion">
+                  <summary class="accordion-summary">
+                    <span class="acc-icon">⚕️</span>
+                    <span class="acc-title">Traditional &amp; Medicinal Research (Educational)</span>
+                    <span class="acc-chevron">▾</span>
+                  </summary>
+                  <div class="accordion-content">
+                    <div class="medicinal-grid">
+                      <div class="med-item">
+                        <span class="med-label">Plant Part Traditionally Used:</span>
+                        <span id="med-parts" class="med-value"></span>
+                      </div>
+                      <div class="med-item">
+                        <span class="med-label">Documented Historical Context:</span>
+                        <p id="med-traditional" class="med-desc"></p>
+                      </div>
+                      <div class="med-item">
+                        <span class="med-label">Modern Scientific Research Context:</span>
+                        <p id="med-research" class="med-desc"></p>
+                      </div>
+                      <div class="med-item">
+                        <span class="med-label">Scientific Evidence Level:</span>
+                        <p id="med-evidence" class="med-desc"></p>
+                      </div>
+                    </div>
+
+                    <!-- Mandatory Medical Disclaimer -->
+                    <div class="disclaimer-callout">
+                      <span class="disclaimer-icon">⚠️</span>
+                      <p class="disclaimer-text">
+                        <strong>Educational Notice Only:</strong> Medicinal information is provided strictly for academic and educational purposes. Documented traditional use does not establish clinical efficacy or safety. This platform does not provide medical diagnoses, treatment advice, or dosage recommendations. Always consult a qualified healthcare professional before using any plant for medicinal purposes.
+                      </p>
+                    </div>
+                  </div>
+                </details>
+
+                <!-- Section 6: In-Depth Botanical Points (10-15 Points) -->
+                <details class="report-accordion">
+                  <summary class="accordion-summary">
+                    <span class="acc-icon">📖</span>
+                    <span class="acc-title">Comprehensive Botanical Analysis (10–15 Points)</span>
+                    <span class="acc-chevron">▾</span>
+                  </summary>
+                  <div class="accordion-content">
+                    <ul id="rep-summary-list" class="summary-list"></ul>
+                  </div>
+                </details>
+
+                <!-- Section 7: Authoritative References -->
+                <details class="report-accordion">
+                  <summary class="accordion-summary">
+                    <span class="acc-icon">📚</span>
+                    <span class="acc-title">Authoritative Botanical Sources</span>
+                    <span class="acc-chevron">▾</span>
+                  </summary>
+                  <div class="accordion-content">
+                    <ul id="rep-sources-list" class="sources-list"></ul>
+                  </div>
+                </details>
+
+                <!-- Section 8: Model Technical Footprint -->
+                <details class="report-accordion">
+                  <summary class="accordion-summary">
+                    <span class="acc-icon">⚙️</span>
+                    <span class="acc-title">Model Technical Information</span>
+                    <span class="acc-chevron">▾</span>
+                  </summary>
+                  <div class="accordion-content">
+                    <div class="report-footer-meta">
+                      <span>Architecture: <strong>PyTorch MobileNetV2</strong></span>
+                      <span>Input Tensor: <strong>224 × 224 RGB</strong></span>
+                      <span>Trained Classes: <strong>5</strong></span>
+                      <span>Rejection Threshold: <strong>55% Softmax Confidence</strong></span>
+                      <span>Inference Device: <strong>CPU</strong></span>
+                    </div>
+                  </div>
+                </details>
               </div>
             </div>
           </div>
 
-          <!-- State 4: Uncertain / Out-of-Distribution Rejection -->
+          <!-- State 4: Uncertain / Below Threshold Rejection -->
           <div id="state-uncertain" class="state-container state-uncertain" style="display: none;">
             <div class="uncertain-banner">
               <span class="warning-icon">❓</span>
               <div class="uncertain-banner-text">
-                <h4>Low Confidence / Out-of-Distribution Input</h4>
-                <p>Confidence score is below the conservative 55.0% threshold.</p>
+                <h4>Confidence Below Configured Threshold (55%) — Prediction Withheld</h4>
+                <p>The model could not produce a sufficiently confident prediction among the supported classes.</p>
               </div>
             </div>
 
             <p id="uncertain-explanation" class="uncertain-msg"></p>
 
             <div class="uncertain-safeguard-box">
-              <strong>Botanical Safeguard Enforced:</strong>
-              <p>Botanical taxonomy and medical records have been suppressed because the model cannot reliably confirm this image as one of its five supported species.</p>
+              <strong>Botanical Guard Applied:</strong>
+              <p>Botanical taxonomy and medicinal records are withheld when model confidence is insufficient, preventing speculative classification.</p>
             </div>
 
             <!-- Diffuse Distribution -->

@@ -392,10 +392,8 @@ def predict():
                     "confidence_pct": round(max_prob * 100, 2),
                     "probability_pct": f"{max_prob * 100:.1f}%",
                     "message": (
-                        f"The model could not confidently identify this image. "
-                        f"Highest model probability ({max_prob * 100:.1f}%) is below the "
-                        f"conservative threshold ({CONFIDENCE_THRESHOLD * 100:.0f}%). "
-                        "The subject may be an unsupported flower species or non-flower content."
+                        f"Confidence ({max_prob * 100:.1f}%) is below the configured threshold ({CONFIDENCE_THRESHOLD * 100:.0f}%) — prediction withheld. "
+                        "The model could not produce a sufficiently confident prediction among the supported classes."
                     ),
                     "top_predictions": prob_list,
                     "image_quality": quality_info,

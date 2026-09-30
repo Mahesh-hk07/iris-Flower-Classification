@@ -158,11 +158,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (w < 160 || h < 160) {
           qualityBox.className = "quality-feedback-bar warning";
           qualityIcon.textContent = "⚠️";
-          qualityText.textContent = `Low resolution (${w}×${h} px). For optimal botanical classification, close-up floral photos are recommended.`;
+          qualityText.textContent = `Technical Check: Low resolution (${w}×${h} px). For optimal botanical classification, close-up floral photos are recommended.`;
         } else {
           qualityBox.className = "quality-feedback-bar";
           qualityIcon.textContent = "✓";
-          qualityText.textContent = `Ready for neural vision analysis (${w}×${h} px, ${formatBytes(file.size)}).`;
+          qualityText.textContent = `Technical Check: Optimal resolution (${w}×${h} px, ${formatBytes(file.size)}). Ready for analysis.`;
         }
       };
       tempImg.src = dataUrl;
@@ -459,7 +459,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const confPctStr = typeof data.confidence_pct === "number" ? `${data.confidence_pct.toFixed(1)}%` : data.probability_pct || "0%";
     uncertainExplanation.textContent =
       data.message ||
-      `The model's highest predicted probability (${confPctStr}) is below the conservative 55.0% threshold. Botanical taxonomy and medicinal data have been suppressed.`;
+      `Confidence below the configured threshold (55.0%) — prediction withheld. The model could not produce a sufficiently confident prediction among the supported classes.`;
 
     renderProbabilityBars(uncertainProbBars, data.top_predictions, null);
 

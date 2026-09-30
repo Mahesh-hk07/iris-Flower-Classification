@@ -79,20 +79,31 @@ When an image is rejected:
 
 ## 5. Measured Model Evaluation & Results
 
-Evaluated against the held-out test dataset in `data/test/`:
+Evaluated against the actual held-out test dataset in `data/test/` (18 independent images):
+- **CNN Architecture**: MobileNetV2 with fine-tuned botanical classification head
 - **Training Accuracy**: 97.87% (Loss: 0.2304)
-- **Validation Accuracy**: 70.00%
-- **Held-Out Test Accuracy**: 56.25% (9/16 correct on independent Wikimedia test images)
-- **Rose Test Performance**: Precision 0.60, Recall 0.75, F1-Score 0.67
-- **Confusion Matrix**: Generated and saved to [`results/confusion_matrix.png`](file:///c:/Users/mayab/OneDrive/Desktop/iris%20Flower%20Classification/results/confusion_matrix.png)
+- **Validation Accuracy**: 66.67% (Recorded in checkpoint)
+- **Held-Out Test Accuracy**: **66.67%** (12/18 correct on current test dataset)
+- **Macro Average**: Precision 0.63, Recall 0.64, F1-Score 0.62
+- **Weighted Average**: Precision 0.69, Recall 0.67, F1-Score 0.66
+- **Confusion Matrix**: Generated live by `evaluate.py` and saved to [`results/confusion_matrix.png`](file:///c:/Users/mayab/OneDrive/Desktop/iris%20Flower%20Classification/results/confusion_matrix.png)
+
+### Current Test Dataset Composition (18 Images):
+- **🌺 Hibiscus** (5 images): Precision 1.00, Recall 0.80, F1-Score 0.89 (4/5 correct)
+- **🌹 Rose** (4 images): Precision 1.00, Recall 0.75, F1-Score 0.86 (3/4 correct)
+- **🌻 Sunflower** (3 images): Precision 0.50, Recall 1.00, F1-Score 0.67 (3/3 correct)
+- **🌸 Iris** (3 images): Precision 0.67, Recall 0.67, F1-Score 0.67 (2/3 correct)
+- **🪷 Lotus** (3 images): Precision 0.00, Recall 0.00, F1-Score 0.00 (0/3 correct due to sample sparsity)
+
+> **Dataset Discrepancy Note**: An earlier intermediate iteration evaluated a 16-sample subset (56.25%, 9/16). The current verified dataset contains 18 held-out images yielding 66.67% (12/18). Every metric in this documentation and web application is verified against this exact 18-image evaluation run.
 
 ### Live Sample Verification:
-- **Hibiscus** (`sample_hibiscus.jpg`) $\rightarrow$ Predicted **Hibiscus** (*Malvaceae*), **97.4%** confidence (Match).
-- **Rose** (`sample_rose.jpg`) $\rightarrow$ Predicted **Rose** (*Rosaceae*), **93.9%** confidence (Match).
-- **Sunflower** (`sample_sunflower.jpg`) $\rightarrow$ Predicted **Sunflower** (*Asteraceae*), **89.9%** confidence (Match).
-- **Lotus** (`sample_lotus.jpg`) $\rightarrow$ Predicted **Lotus** (*Nelumbonaceae*), **62.7%** confidence (Match).
-- **Iris** (`sample_iris.jpg`) $\rightarrow$ Predicted **Iris** (*Iridaceae*), **99.9%** confidence (Match).
-- **Uncertain / Non-Flower** (`grey_noise_test.jpg`) $\rightarrow$ Top prob **38.2%** (< 40.0%) $\rightarrow$ Correctly rejected as **Uncertain**.
+- **Hibiscus** (`sample_hibiscus.jpg`) $\rightarrow$ Predicted **Hibiscus** (*Malvaceae*), **96.9%** confidence.
+- **Rose** (`sample_rose.jpg`) $\rightarrow$ Predicted **Rose** (*Rosaceae*), **85.2%** confidence.
+- **Sunflower** (`sample_sunflower.jpg`) $\rightarrow$ Predicted **Sunflower** (*Asteraceae*), **96.0%** confidence.
+- **Lotus** (`sample_lotus.jpg`) $\rightarrow$ Predicted **Lotus** (*Nelumbonaceae*), **70.3%** confidence.
+- **Iris** (`sample_iris.jpg`) $\rightarrow$ Predicted **Iris** (*Iridaceae*), **99.8%** confidence.
+- **Non-Flower / Noise** (`grey_noise_test.jpg`) $\rightarrow$ Top probability **50.1%** (< 55.0% threshold) $\rightarrow$ **Prediction withheld**.
 
 ---
 
