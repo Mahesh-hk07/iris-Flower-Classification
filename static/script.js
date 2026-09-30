@@ -69,9 +69,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const uncertainExplanation = document.getElementById("uncertain-explanation");
   const uncertainProbBars = document.getElementById("uncertain-prob-bars");
 
-  // Sample Buttons & Explorer Triggers
+  // Sample Buttons Trigger
   const sampleBtns = document.querySelectorAll(".sample-btn");
-  const explorerLoadBtns = document.querySelectorAll(".explorer-load-btn");
 
   // State
   let currentFile = null;
@@ -272,14 +271,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Explorer "Test in Scanner" Buttons
-  explorerLoadBtns.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const src = btn.getAttribute("data-src");
-      const name = btn.getAttribute("data-name");
-      loadSampleByUrl(src, name);
-    });
-  });
 
   /**
    * Renders probability distribution rows

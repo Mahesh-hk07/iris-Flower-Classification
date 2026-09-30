@@ -23,8 +23,10 @@ def verify_all():
     r = client.get("/")
     assert r.status_code == 200, f"Expected 200, got {r.status_code}"
     html = r.data.decode("utf-8")
-    for section_id in ["scanner", "explorer", "pipeline", "model-insights", "limitations", "about"]:
+    for section_id in ["scanner", "about"]:
         assert f'id="{section_id}"' in html, f"Missing section id: {section_id}"
+    for removed_id in ["explorer", "pipeline", "model-insights", "limitations"]:
+        assert f'id="{removed_id}"' not in html, f"Section {removed_id} should be absent from clean UI"
     assert "FloraVision" in html
     assert "Confidence Below Configured Threshold" in html
     assert "Technical Check" in html or "Technical Image Quality" in html

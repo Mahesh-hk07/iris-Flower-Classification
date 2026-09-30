@@ -20,15 +20,31 @@ Conservative Rejection Safeguard:
 """
 
 import os
+# Enforce single-threaded execution for math libraries to prevent OpenMP deadlocks in Linux containers
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
+os.environ["NUMEXPR_NUM_THREADS"] = "1"
+
 import io
 import json
 import base64
+import time
+import traceback
 import torch
 import torch.nn as nn
 from torchvision import models, transforms
 from PIL import Image, ImageStat
 import numpy as np
 from flask import Flask, request, jsonify, render_template, send_from_directory
+
+# Restrict PyTorch thread pool to 1 thread for safe web worker concurrency
+torch.set_num_threads(1)
+try:
+    torch.set_num_interop_threads(1)
+except RuntimeError:
+    pass
 
 # Initialize Flask
 app = Flask(__name__)
@@ -96,6 +112,8 @@ def load_resources_at_startup():
         )
         m.load_state_dict(checkpoint["state_dict"])
         m.eval()
+        for p in m.parameters():
+            p.requires_grad = False
 
         model = m
 
@@ -178,17 +196,13 @@ def compute_gradcam(model_ref, input_tensor, original_pil_img, target_class_idx)
     """
     try:
         activations = []
-        gradients = []
 
         def forward_hook(module, inp, out):
             activations.append(out)
-
-        def backward_hook(module, grad_in, grad_out):
-            gradients.append(grad_out[0])
+            out.retain_grad()
 
         target_layer = model_ref.features[-1]
         h_f = target_layer.register_forward_hook(forward_hook)
-        h_b = target_layer.register_full_backward_hook(backward_hook)
 
         x = input_tensor.clone().detach().requires_grad_(True)
         with torch.enable_grad():
@@ -198,13 +212,12 @@ def compute_gradcam(model_ref, input_tensor, original_pil_img, target_class_idx)
             score.backward()
 
         h_f.remove()
-        h_b.remove()
 
-        if not activations or not gradients:
+        if not activations or activations[0].grad is None:
             return None
 
         act = activations[0]  # [1, 1280, 7, 7]
-        grad = gradients[0]   # [1, 1280, 7, 7]
+        grad = act.grad       # [1, 1280, 7, 7]
 
         # Global average pool the gradients to obtain feature importance weights
         weights = grad.mean(dim=(2, 3), keepdim=True)
@@ -345,111 +358,63 @@ def predict():
         }), 400
 
     # 5. Run neural network inference
+    t_start = time.time()
     try:
         with torch.no_grad():
             logits = model(input_tensor)
             probabilities = torch.softmax(logits, dim=1)[0]
 
-            # Build sorted list of all predictions
-            prob_list = []
-            for i, c_name in enumerate(class_names):
-                display = metadata_db.get(c_name, {}).get("display_name", c_name.capitalize())
-                family = metadata_db.get(c_name, {}).get("family", "Unknown")
-                prob_val = float(probabilities[i].item())
-                prob_list.append({
-                    "class": display,
-                    "class_code": c_name,
-                    "flower": display,
-                    "common_name": display,
-                    "display_name": display,
-                    "family": family,
-                    "probability": round(prob_val, 4),
-                    "probability_pct": f"{prob_val * 100:.1f}%",
-                    "class_index": i
-                })
+        # Build sorted list of all predictions
+        prob_list = []
+        for i, c_name in enumerate(class_names):
+            display = metadata_db.get(c_name, {}).get("display_name", c_name.capitalize())
+            family = metadata_db.get(c_name, {}).get("family", "Unknown")
+            prob_val = float(probabilities[i].item())
+            prob_list.append({
+                "class": display,
+                "class_code": c_name,
+                "flower": display,
+                "common_name": display,
+                "display_name": display,
+                "family": family,
+                "probability": round(prob_val, 4),
+                "probability_pct": f"{prob_val * 100:.1f}%",
+                "class_index": i
+            })
 
-            # Sort descending by probability
-            prob_list.sort(key=lambda x: x["probability"], reverse=True)
+        # Sort descending by probability
+        prob_list.sort(key=lambda x: x["probability"], reverse=True)
 
-            best_pred = prob_list[0]
-            max_prob = best_pred["probability"]
-            predicted_class = best_pred["class_code"]
-            winning_idx = best_pred["class_index"]
+        best_pred = prob_list[0]
+        max_prob = best_pred["probability"]
+        predicted_class = best_pred["class_code"]
+        winning_idx = best_pred["class_index"]
 
-            # 6. Conservative Rejection Safeguard
-            if max_prob < CONFIDENCE_THRESHOLD:
-                return jsonify({
-                    "status": "uncertain",
-                    "flower": None,
-                    "common_name": None,
-                    "predicted_class": None,
-                    "family": None,
-                    "botanical_family": None,
-                    "scientific_name": None,
-                    "taxonomic_order": None,
-                    "characteristics": None,
-                    "habitat": None,
-                    "probability": max_prob,
-                    "confidence_pct": round(max_prob * 100, 2),
-                    "probability_pct": f"{max_prob * 100:.1f}%",
-                    "message": (
-                        f"Confidence ({max_prob * 100:.1f}%) is below the configured threshold ({CONFIDENCE_THRESHOLD * 100:.0f}%) — prediction withheld. "
-                        "The model could not produce a sufficiently confident prediction among the supported classes."
-                    ),
-                    "top_predictions": prob_list,
-                    "image_quality": quality_info,
-                    "botanical_info": None,
-                    "gradcam_heatmap": None,
-                    "model_info": {
-                        "architecture": "MobileNetV2",
-                        "framework": "PyTorch 2.x",
-                        "input_resolution": "224×224 RGB",
-                        "supported_classes": 5,
-                        "rejection_threshold": f"{CONFIDENCE_THRESHOLD * 100:.0f}%"
-                    }
-                }), 200
-
-            # 7. Accepted Prediction & Botanical Intelligence Report
-            botanical_facts = metadata_db.get(predicted_class, {}) or {}
-
-            # Optional Grad-CAM explainability
-            gradcam_url = compute_gradcam(model, input_tensor, pil_img, winning_idx)
-
+        # 6. Conservative Rejection Safeguard
+        if max_prob < CONFIDENCE_THRESHOLD:
+            print(f"[*] /predict: Low confidence ({max_prob * 100:.1f}% < {CONFIDENCE_THRESHOLD * 100:.0f}%) — prediction withheld in {time.time() - t_start:.3f}s")
             return jsonify({
-                "status": "success",
-                "flower": best_pred["flower"],
-                "common_name": best_pred["flower"],
-                "predicted_class": predicted_class,
-                "family": best_pred["family"],
-                "botanical_family": best_pred["family"],
-                "scientific_name": botanical_facts.get("scientific_name", ""),
-                "common_names": botanical_facts.get("common_names", ""),
-                "full_taxonomy": botanical_facts.get("full_taxonomy", ""),
-                "taxonomic_order": botanical_facts.get("order", ""),
-                "characteristics": botanical_facts.get("characteristics", ""),
-                "habitat": botanical_facts.get("habitat", ""),
-                "phenology": botanical_facts.get("phenology", ""),
-                "cultural_medicinal": botanical_facts.get("cultural_medicinal", ""),
-                "diagnostic_tips": botanical_facts.get("diagnostic_tips", ""),
-                "comprehensive_summary": botanical_facts.get("comprehensive_summary", []),
-
-                # Enriched Botanical Intelligence Fields
-                "overview": botanical_facts.get("overview", botanical_facts.get("characteristics", "")),
-                "key_characteristics": botanical_facts.get("key_characteristics", botanical_facts.get("characteristics", "")),
-                "geographic_distribution": botanical_facts.get("geographic_distribution", botanical_facts.get("habitat", "")),
-                "ecological_importance": botanical_facts.get("ecological_importance", ""),
-                "common_uses": botanical_facts.get("common_uses", {}),
-                "traditional_medicinal_info": botanical_facts.get("traditional_medicinal_info", {}),
-                "authoritative_sources": botanical_facts.get("authoritative_sources", []),
-
+                "status": "uncertain",
+                "flower": None,
+                "common_name": None,
+                "predicted_class": None,
+                "family": None,
+                "botanical_family": None,
+                "scientific_name": None,
+                "taxonomic_order": None,
+                "characteristics": None,
+                "habitat": None,
                 "probability": max_prob,
                 "confidence_pct": round(max_prob * 100, 2),
                 "probability_pct": f"{max_prob * 100:.1f}%",
-                "message": f"Successfully identified as {best_pred['flower']}.",
+                "message": (
+                    f"Confidence ({max_prob * 100:.1f}%) is below the configured threshold ({CONFIDENCE_THRESHOLD * 100:.0f}%) — prediction withheld. "
+                    "The model could not produce a sufficiently confident prediction among the supported classes."
+                ),
                 "top_predictions": prob_list,
-                "botanical_info": botanical_facts,
                 "image_quality": quality_info,
-                "gradcam_heatmap": gradcam_url,
+                "botanical_info": None,
+                "gradcam_heatmap": None,
                 "model_info": {
                     "architecture": "MobileNetV2",
                     "framework": "PyTorch 2.x",
@@ -459,8 +424,60 @@ def predict():
                 }
             }), 200
 
+        # 7. Accepted Prediction & Botanical Intelligence Report
+        botanical_facts = metadata_db.get(predicted_class, {}) or {}
+
+        # Grad-CAM explainability
+        gradcam_url = compute_gradcam(model, input_tensor, pil_img, winning_idx)
+        print(f"[*] /predict: Successfully identified {best_pred['flower']} ({max_prob * 100:.1f}%) in {time.time() - t_start:.3f}s")
+
+        return jsonify({
+            "status": "success",
+            "flower": best_pred["flower"],
+            "common_name": best_pred["flower"],
+            "predicted_class": predicted_class,
+            "family": best_pred["family"],
+            "botanical_family": best_pred["family"],
+            "scientific_name": botanical_facts.get("scientific_name", ""),
+            "common_names": botanical_facts.get("common_names", ""),
+            "full_taxonomy": botanical_facts.get("full_taxonomy", ""),
+            "taxonomic_order": botanical_facts.get("order", ""),
+            "characteristics": botanical_facts.get("characteristics", ""),
+            "habitat": botanical_facts.get("habitat", ""),
+            "phenology": botanical_facts.get("phenology", ""),
+            "cultural_medicinal": botanical_facts.get("cultural_medicinal", ""),
+            "diagnostic_tips": botanical_facts.get("diagnostic_tips", ""),
+            "comprehensive_summary": botanical_facts.get("comprehensive_summary", []),
+
+            # Enriched Botanical Intelligence Fields
+            "overview": botanical_facts.get("overview", botanical_facts.get("characteristics", "")),
+            "key_characteristics": botanical_facts.get("key_characteristics", botanical_facts.get("characteristics", "")),
+            "geographic_distribution": botanical_facts.get("geographic_distribution", botanical_facts.get("habitat", "")),
+            "ecological_importance": botanical_facts.get("ecological_importance", ""),
+            "common_uses": botanical_facts.get("common_uses", {}),
+            "traditional_medicinal_info": botanical_facts.get("traditional_medicinal_info", {}),
+            "authoritative_sources": botanical_facts.get("authoritative_sources", []),
+
+            "probability": max_prob,
+            "confidence_pct": round(max_prob * 100, 2),
+            "probability_pct": f"{max_prob * 100:.1f}%",
+            "message": f"Successfully identified as {best_pred['flower']}.",
+            "top_predictions": prob_list,
+            "botanical_info": botanical_facts,
+            "image_quality": quality_info,
+            "gradcam_heatmap": gradcam_url,
+            "model_info": {
+                "architecture": "MobileNetV2",
+                "framework": "PyTorch 2.x",
+                "input_resolution": "224×224 RGB",
+                "supported_classes": 5,
+                "rejection_threshold": f"{CONFIDENCE_THRESHOLD * 100:.0f}%"
+            }
+        }), 200
+
     except Exception as e:
         print(f"[!] Inference runtime error: {e}")
+        traceback.print_exc()
         return jsonify({
             "status": "error",
             "error": "An internal error occurred during neural network inference."
