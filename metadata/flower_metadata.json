@@ -59,17 +59,17 @@
   "rose": {
     "display_name": "Rose",
     "common_names": "Garden Rose, China Rose (botanical Rosa chinensis), Hybrid Tea Rose, Damask Rose, Floribunda",
-    "scientific_name": "Rosa chinensis / Rosa spp.",
+    "scientific_name": "Rosa spp.",
     "kingdom": "Plantae",
     "division": "Tracheophyta (Vascular Plants)",
     "class": "Magnoliopsida (Dicotyledons)",
     "order": "Rosales",
     "family": "Rosaceae (Rose Family)",
     "genus": "Rosa L.",
-    "species": "R. chinensis / Rosa hybrids",
+    "species": "Rosa spp.",
     "full_taxonomy": "Kingdom: Plantae • Division: Tracheophyta • Class: Magnoliopsida • Order: Rosales • Family: Rosaceae • Genus: Rosa • Species: Rosa spp.",
     "characteristics": "Woody perennial shrubs or climbing canes characterized by stems armed with sharp prickles (commonly called thorns). Blossoms exhibit numerous tightly overlapping whorls of petals arranged in a spiral spiral corolla with sweet aromatic fragrance. Leaves are pinnately compound with 3 to 7 oval, sharply serrated leaflets and paired stipules at the base of the petiole. The fruit is a fleshy, berry-like hypanthium known as a rose hip.",
-    "habitat": "Native primarily to the temperate and subtropical regions of the Northern Hemisphere (Asia, Europe, North America, Northwestern Africa). Extensively hybridized worldwide; prefers temperate climates, full sunlight (at least 6 hours daily), and fertile, well-draining loamy soil with pH 6.0–6.5.",
+    "habitat": "The genus Rosa is native primarily across the temperate and subtropical regions of the Northern Hemisphere (Asia, Europe, North America, and Northwestern Africa), whereas the specific ancestor Rosa chinensis is native to southwestern China. Roses are extensively hybridized and cultivated worldwide in temperate climates, preferring full sunlight and well-draining loamy soil with pH 6.0–6.5.",
     "phenology": "In modern cultivars (Rosa chinensis hybrids), blooming occurs in repeat flushes from late spring through late autumn. Wild ancestral roses typically bloom once profusely in early summer.",
     "cultural_medicinal": "Universally recognized symbol of love, romance, beauty, and honor. Rose oil (attar of roses) and rose water are staple ingredients in premium perfumery and confectionery. Rose hips are exceptionally rich in vitamin C and used in teas, syrups, and traditional herbal remedies.",
     "diagnostic_tips": "How to distinguish from Hibiscus: Rose blossoms feature multiple nested concentric rings of petals spiraling toward the center with prickles on the woody stem. They completely lack the long protruding staminal tube found in Hibiscus.",
@@ -79,7 +79,7 @@
       "3. Stem Morphology: Woody stems equipped with prickles (epidermal outgrowths), providing mechanical defense and climbing support.",
       "4. Foliage Anatomy: Pinnately compound alternate leaves featuring 3 to 7 ovate, serrated leaflets with characteristic basal stipules.",
       "5. Fruit Structure: Post-anthesis floral receptacle develops into a nutrient-dense, vitamin-C-rich red or orange berry-like 'rose hip'.",
-      "6. Native Geography: Widespread across temperate Asia (over 60% of wild species), Europe, North America, and North Africa.",
+      "6. Native Geography: The genus Rosa is native across temperate and subtropical regions of the Northern Hemisphere (Asia, Europe, North America, and North Africa); Rosa chinensis specifically originates from China.",
       "7. Growing Conditions: Requires full sun, deep well-drained loamy soil, good air circulation, and consistent moisture without waterlogging.",
       "8. Aromatic Profile: Emits volatile organic compounds including geraniol, citronellol, and rose oxide, giving its signature floral bouquet.",
       "9. Historical Significance: Cultivated for over 5,000 years, dating back to ancient Persian, Roman, Greek, and Chinese dynastic gardens.",
@@ -89,7 +89,7 @@
     ],
     "overview": "Woody perennial flowering shrub or cane-climber celebrated for over five millennia for its exquisitely spiraled, fragrant blossoms and defensive thorn-like stem prickles.",
     "key_characteristics": "Numerous tightly overlapping concentric petal whorls, cup-like hypanthium receptacle developing into a vitamin-rich rose hip, woody stems bearing prickles, and odd-pinnate serrated foliage.",
-    "geographic_distribution": "Native primarily across the temperate and subtropical regions of the Northern Hemisphere (Asia, Europe, North America, and Northwestern Africa), with over 60% of wild species indigenous to Asia.",
+    "geographic_distribution": "The genus Rosa is native across the temperate and subtropical regions of the Northern Hemisphere (Asia, Europe, North America, and Northwestern Africa). In contrast, the specific species Rosa chinensis (China Rose) is native to southwestern China. Modern garden roses are cultivated worldwide.",
     "ecological_importance": "High-value pollen source for honeybees and bumblebees; autumn-ripening rose hips serve as an essential high-energy food reservoir for migrating birds throughout winter.",
     "common_uses": {
       "traditional": "Distillation of fragrant petals into pure rose water and culinary preserves in Persian and European traditions.",
@@ -102,9 +102,9 @@
     "traditional_medicinal_info": {
       "plant_parts_used": "Rose hips (pseudo-fruits), petals, and pure distilled essential oil.",
       "documented_traditional_use": "Rose hips were historically brewed during cold seasons across Europe and North America to prevent nutritional deficiency; rose water was applied as a mild soothing facial wash.",
-      "scientific_research_context": "Rose hips are established to contain 400 to 1,700 mg of Vitamin C per 100g, alongside bioactive galactolipids (GOPO) and flavonoids under scientific investigation for joint mobility.",
-      "evidence_level": "Moderate clinical trial evidence supporting standardized rose hip powder for mild osteoarthritic discomfort; essential oil aromatherapy shows transient relaxation effects.",
-      "safety_and_disclaimer": "Educational context only. High-dose rose hip preparations may cause mild gastric irritation or interact with lithium and anticoagulants. Never replace prescribed therapy without physician consultation."
+      "scientific_research_context": "Rose hips contain vitamin C and other bioactive compounds, alongside galactolipids (GOPO) and polyphenolic flavonoids that have been studied in botanical and nutritional literature.",
+      "evidence_level": "Preliminary and clinical studies have explored standardized rose hip preparations for mild joint discomfort and essential oil aromatherapy for relaxation; findings are variable and do not constitute proof of clinical treatment effectiveness.",
+      "safety_and_disclaimer": "Educational context only. This information does not constitute medical advice and does not prove treatment effectiveness. Traditional or preliminary use does not establish therapeutic safety or efficacy. High-dose rose hip preparations may cause mild gastric irritation or interact with lithium and anticoagulants. Always consult a qualified healthcare provider."
     },
     "authoritative_sources": [
       "Royal Botanic Gardens Kew, Plants of the World Online (POWO): Rosa L.",

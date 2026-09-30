@@ -21,7 +21,7 @@ This application implements a complete, modern computer vision pipeline:
 | Class Key | Display Name | Scientific Name | Botanical Family | Order |
 | :--- | :--- | :--- | :--- | :--- |
 | `hibiscus` | **Hibiscus** | *Hibiscus rosa-sinensis* | **Malvaceae** | Malvales |
-| `rose` | **Rose** | *Rosa chinensis / Rosa spp.* | **Rosaceae** | Rosales |
+| `rose` | **Rose** | *Rosa spp.* | **Rosaceae** | Rosales |
 | `sunflower` | **Sunflower** | *Helianthus annuus* | **Asteraceae** | Asterales |
 | `lotus` | **Lotus** | *Nelumbo nucifera* | **Nelumbonaceae** | Proteales |
 | `iris` | **Iris** | *Iris setosa / Iris spp.* | **Iridaceae** | Asparagales |
