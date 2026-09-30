@@ -1,15 +1,15 @@
 /**
  * ==============================================================================
- * FloraVision AI - Modern Client-Side JavaScript
+ * FloraVision AI 2.0 - Client Controller Script
  * ==============================================================================
- * Handles drag-and-drop, sample thumbnail gallery interaction, file validation,
- * image preview, asynchronous FormData submission to Flask /predict, and dynamic
- * rendering of deep learning predictions and botanical metadata.
+ * Handles image selection, drag-and-drop, quick test sample loading,
+ * asynchronous prediction dispatch to /predict, image-quality feedback,
+ * Grad-CAM neural explainability toggling, and botanical report rendering.
  * ==============================================================================
  */
 
 document.addEventListener("DOMContentLoaded", () => {
-  // DOM Elements
+  // Upload & Form Elements
   const form = document.getElementById("upload-form");
   const imageInput = document.getElementById("image-input");
   const dropZone = document.getElementById("drop-zone");
@@ -21,55 +21,73 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnChangeImage = document.getElementById("btn-change-image");
   const btnAnalyze = document.getElementById("btn-analyze");
   const btnReset = document.getElementById("btn-reset");
-
-  // Feedback & State Views
-  const placeholderBox = document.getElementById("placeholder-box");
-  const loadingBox = document.getElementById("loading-box");
-  const successBox = document.getElementById("result-success-box");
-  const uncertainBox = document.getElementById("result-uncertain-box");
+  const qualityBox = document.getElementById("quality-feedback-box");
+  const qualityIcon = document.getElementById("quality-icon");
+  const qualityText = document.getElementById("quality-text");
   const errorBox = document.getElementById("error-box");
   const errorMessage = document.getElementById("error-message");
 
-  // Success Card Elements
-  const resSpeciesName = document.getElementById("res-species-name");
-  const resScientificName = document.getElementById("res-scientific-name");
+  // State Viewports
+  const statePlaceholder = document.getElementById("state-placeholder");
+  const stateLoading = document.getElementById("state-loading");
+  const stateSuccess = document.getElementById("state-success");
+  const stateUncertain = document.getElementById("state-uncertain");
+
+  // Success Viewport Elements
+  const resultDisplayImg = document.getElementById("result-display-img");
+  const resultGradcamImg = document.getElementById("result-gradcam-img");
+  const gradcamControls = document.getElementById("gradcam-controls");
+  const gradcamCaption = document.getElementById("gradcam-caption");
+  const btnViewOriginal = document.getElementById("btn-view-original");
+  const btnViewGradcam = document.getElementById("btn-view-gradcam");
+
+  const resFlowerName = document.getElementById("res-flower-name");
+  const resScientificSubtitle = document.getElementById("res-scientific-subtitle");
+  const resFamilyPill = document.getElementById("res-family-pill");
+  const resOrderPill = document.getElementById("res-order-pill");
   const resConfidencePct = document.getElementById("res-confidence-pct");
-  const resConfidenceSub = document.getElementById("res-confidence-sub");
-  const resConfidenceBar = document.getElementById("res-confidence-bar");
-  const resBadge = document.getElementById("res-badge");
-  const bFamily = document.getElementById("b-family");
-  const bOrder = document.getElementById("b-order");
-  const bFullTaxonomy = document.getElementById("b-full-taxonomy");
-  const bCommonNames = document.getElementById("b-common-names");
-  const bCharacteristics = document.getElementById("b-characteristics");
-  const bHabitat = document.getElementById("b-habitat");
-  const bCultural = document.getElementById("b-cultural");
-  const bDiagnostic = document.getElementById("b-diagnostic");
-  const bSummaryList = document.getElementById("b-summary-list");
-  const probList = document.getElementById("prob-list");
+  const resConfidenceFill = document.getElementById("res-confidence-fill");
+  const topPredictionsList = document.getElementById("top-predictions-list");
 
-  // Uncertain Card Elements
-  const uncertainMessage = document.getElementById("uncertain-message");
-  const uncertainProbList = document.getElementById("uncertain-prob-list");
+  // Botanical Report Elements
+  const repOverview = document.getElementById("rep-overview");
+  const repCharacteristics = document.getElementById("rep-characteristics");
+  const repDistribution = document.getElementById("rep-distribution");
+  const repEcological = document.getElementById("rep-ecological");
+  const repDiagnostic = document.getElementById("rep-diagnostic");
+  const repUsesGrid = document.getElementById("rep-uses-grid");
+  const repSummaryList = document.getElementById("rep-summary-list");
+  const repSourcesList = document.getElementById("rep-sources-list");
 
-  // Sample Cards
-  const sampleCards = document.querySelectorAll(".sample-card");
+  // Medicinal Context Elements
+  const medParts = document.getElementById("med-parts");
+  const medTraditional = document.getElementById("med-traditional");
+  const medResearch = document.getElementById("med-research");
+  const medEvidence = document.getElementById("med-evidence");
+
+  // Uncertain Viewport Elements
+  const uncertainExplanation = document.getElementById("uncertain-explanation");
+  const uncertainProbBars = document.getElementById("uncertain-prob-bars");
+
+  // Sample Buttons & Explorer Triggers
+  const sampleBtns = document.querySelectorAll(".sample-btn");
+  const explorerLoadBtns = document.querySelectorAll(".explorer-load-btn");
 
   // State
   let currentFile = null;
-  const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 Megabytes
+  const ALLOWED_MIME = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
   /**
-   * Clears all feedback/result panes to neutral state
+   * Clears all feedback/results viewports
    */
   function clearResults() {
     errorBox.style.display = "none";
     errorMessage.textContent = "";
-    loadingBox.style.display = "none";
-    successBox.style.display = "none";
-    uncertainBox.style.display = "none";
-    placeholderBox.style.display = "flex";
+    stateLoading.style.display = "none";
+    stateSuccess.style.display = "none";
+    stateUncertain.style.display = "none";
+    statePlaceholder.style.display = "flex";
   }
 
   /**
@@ -96,11 +114,11 @@ document.addEventListener("DOMContentLoaded", () => {
    */
   function validateFile(file) {
     if (!file) {
-      showError("Please select a flower image to analyze.");
+      showError("Please select a flower photograph to analyze.");
       return false;
     }
 
-    if (!ALLOWED_TYPES.includes(file.type.toLowerCase())) {
+    if (!ALLOWED_MIME.includes(file.type.toLowerCase())) {
       showError("Unsupported file type. Please upload a JPG, JPEG, PNG, or WEBP image.");
       return false;
     }
@@ -114,21 +132,40 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * Sets preview display for chosen file
+   * Sets preview display for chosen file and evaluates dimensions
    */
   function setPreview(file) {
     clearResults();
-
     currentFile = file;
+
     previewFilename.textContent = file.name;
     previewFilesize.textContent = formatBytes(file.size);
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      imagePreview.src = e.target.result;
+      const dataUrl = e.target.result;
+      imagePreview.src = dataUrl;
       dropPrompt.style.display = "none";
       previewWrapper.style.display = "flex";
       btnAnalyze.disabled = false;
+
+      // Quick client dimension analysis
+      const tempImg = new Image();
+      tempImg.onload = () => {
+        const w = tempImg.width;
+        const h = tempImg.height;
+        qualityBox.style.display = "flex";
+        if (w < 160 || h < 160) {
+          qualityBox.className = "quality-feedback-bar warning";
+          qualityIcon.textContent = "⚠️";
+          qualityText.textContent = `Low resolution (${w}×${h} px). For optimal botanical classification, close-up floral photos are recommended.`;
+        } else {
+          qualityBox.className = "quality-feedback-bar";
+          qualityIcon.textContent = "✓";
+          qualityText.textContent = `Ready for neural vision analysis (${w}×${h} px, ${formatBytes(file.size)}).`;
+        }
+      };
+      tempImg.src = dataUrl;
     };
     reader.readAsDataURL(file);
   }
@@ -143,7 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
     previewWrapper.style.display = "none";
     dropPrompt.style.display = "flex";
     btnAnalyze.disabled = true;
-    sampleCards.forEach((c) => c.classList.remove("active"));
+    qualityBox.style.display = "none";
     clearResults();
   }
 
@@ -151,18 +188,17 @@ document.addEventListener("DOMContentLoaded", () => {
   imageInput.addEventListener("change", (e) => {
     const file = e.target.files[0];
     if (file && validateFile(file)) {
-      sampleCards.forEach((c) => c.classList.remove("active"));
       setPreview(file);
     }
   });
 
-  // Change Photo button
+  // Change Image Button
   btnChangeImage.addEventListener("click", (e) => {
     e.stopPropagation();
     imageInput.click();
   });
 
-  // Reset button
+  // Reset Button
   btnReset.addEventListener("click", () => {
     resetForm();
   });
@@ -179,7 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
     dropZone.addEventListener(evt, (e) => {
       e.preventDefault();
       e.stopPropagation();
-      dropZone.classList.add("drag-over");
+      dropZone.classList.add("dragover");
     });
   });
 
@@ -187,7 +223,7 @@ document.addEventListener("DOMContentLoaded", () => {
     dropZone.addEventListener(evt, (e) => {
       e.preventDefault();
       e.stopPropagation();
-      dropZone.classList.remove("drag-over");
+      dropZone.classList.remove("dragover");
     });
   });
 
@@ -195,153 +231,240 @@ document.addEventListener("DOMContentLoaded", () => {
     const dt = e.dataTransfer;
     const file = dt.files[0];
     if (file && validateFile(file)) {
-      sampleCards.forEach((c) => c.classList.remove("active"));
       setPreview(file);
     }
   });
 
-  // Quick Preset Sample Photo Cards
-  sampleCards.forEach((card) => {
-    card.addEventListener("click", async () => {
-      sampleCards.forEach((c) => c.classList.remove("active"));
-      card.classList.add("active");
+  /**
+   * Helper to load a static sample file into the scanner
+   */
+  async function loadSampleByUrl(src, name) {
+    try {
+      clearResults();
+      statePlaceholder.style.display = "none";
+      stateLoading.style.display = "flex";
 
-      const src = card.getAttribute("data-src");
-      const name = card.getAttribute("data-name");
+      const res = await fetch(src);
+      const blob = await res.blob();
+      stateLoading.style.display = "none";
 
-      try {
-        clearResults();
-        placeholderBox.style.display = "none";
-        loadingBox.style.display = "flex";
-
-        const res = await fetch(src);
-        const blob = await res.blob();
-        loadingBox.style.display = "none";
-
-        const sampleFile = new File([blob], name, { type: blob.type || "image/jpeg" });
-        if (validateFile(sampleFile)) {
-          setPreview(sampleFile);
+      const sampleFile = new File([blob], name, { type: blob.type || "image/jpeg" });
+      if (validateFile(sampleFile)) {
+        setPreview(sampleFile);
+        // Scroll to scanner
+        const scannerElem = document.getElementById("scanner");
+        if (scannerElem) {
+          scannerElem.scrollIntoView({ behavior: "smooth" });
         }
-      } catch (err) {
-        loadingBox.style.display = "none";
-        showError("Failed to load sample photo. You can upload an image from your computer.");
       }
+    } catch (err) {
+      stateLoading.style.display = "none";
+      showError("Unable to load the requested sample image. You can upload an image from your computer.");
+    }
+  }
+
+  // Quick Preset Sample Buttons
+  sampleBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const src = btn.getAttribute("data-src");
+      const name = btn.getAttribute("data-name");
+      loadSampleByUrl(src, name);
+    });
+  });
+
+  // Explorer "Test in Scanner" Buttons
+  explorerLoadBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const src = btn.getAttribute("data-src");
+      const name = btn.getAttribute("data-name");
+      loadSampleByUrl(src, name);
     });
   });
 
   /**
    * Renders probability distribution rows
    */
-  function renderProbabilities(container, topPredictions, winningClass) {
+  function renderProbabilityBars(container, topPredictions, winningClassCode) {
     if (!container) return;
     container.innerHTML = "";
     if (!topPredictions || !Array.isArray(topPredictions)) return;
 
     topPredictions.forEach((item) => {
-      const clsName = item.flower || item.common_name || item.class || item.display_name || item.class_code || "Flower";
+      const name = item.flower || item.common_name || item.display_name || item.class || "Flower";
       const pct = Math.round((item.probability || 0) * 100);
-      const isWinner = winningClass && clsName.toLowerCase() === winningClass.toLowerCase();
+      const isWinner = winningClassCode && (item.class_code === winningClassCode || name.toLowerCase() === winningClassCode.toLowerCase());
 
       const row = document.createElement("div");
-      row.className = `prob-row ${isWinner ? "winner" : ""}`;
+      row.className = `pred-row ${isWinner ? "active-winner" : ""}`;
       row.innerHTML = `
-        <span class="prob-name">${clsName}</span>
-        <div class="prob-track">
-          <div class="prob-fill ${isWinner ? "winner" : ""}" style="width: ${pct}%"></div>
+        <span class="pred-name">${name}</span>
+        <div class="pred-bar-track">
+          <div class="pred-bar-fill" style="width: ${pct}%"></div>
         </div>
-        <span class="prob-pct">${pct}%</span>
+        <span class="pred-pct">${pct}%</span>
       `;
       container.appendChild(row);
     });
   }
 
   /**
-   * Displays confirmed botanical prediction
+   * Displays confirmed botanical prediction & intelligence report
    */
   function displaySuccess(data) {
     clearResults();
-    if (placeholderBox) placeholderBox.style.display = "none";
+    statePlaceholder.style.display = "none";
 
-    const commonName = data.common_name || data.predicted_class || data.flower || "Flower";
+    const commonName = data.common_name || data.flower || "Flower";
     const scientific = data.scientific_name || "";
+    const family = data.family || data.botanical_family || "Unknown Family";
+    const order = data.taxonomic_order || "Unknown Order";
     const confPct = typeof data.confidence_pct === "number" ? `${data.confidence_pct.toFixed(1)}%` : data.probability_pct || "0%";
     const confRatio = typeof data.confidence_pct === "number" ? Math.min(100, Math.round(data.confidence_pct)) : Math.round((data.probability || 0) * 100);
 
-    if (resSpeciesName) resSpeciesName.textContent = commonName;
-    if (resScientificName) resScientificName.textContent = scientific ? `${scientific}` : "";
-    if (resConfidencePct) resConfidencePct.textContent = confPct;
-    if (resConfidenceSub) resConfidenceSub.textContent = `${confPct} probability`;
-    if (resConfidenceBar) resConfidenceBar.style.width = `${confRatio}%`;
-
-    // Botanical Taxonomy & Hierarchy
-    if (data.botanical_family && bFamily) {
-      bFamily.textContent = data.botanical_family;
-    }
-    if (data.taxonomic_order && bOrder) {
-      bOrder.textContent = data.taxonomic_order;
-    }
-    if (bFullTaxonomy) {
-      bFullTaxonomy.textContent = data.full_taxonomy || (data.botanical_info && data.botanical_info.full_taxonomy) || "";
-    }
-    if (bCommonNames) {
-      bCommonNames.textContent = data.common_names || (data.botanical_info && data.botanical_info.common_names) || "";
-    }
-    if (bCharacteristics) {
-      bCharacteristics.textContent = data.characteristics || (data.botanical_info && data.botanical_info.characteristics) || "";
-    }
-    if (bHabitat) {
-      bHabitat.textContent = data.habitat || (data.botanical_info && data.botanical_info.habitat) || "";
-    }
-    if (bCultural) {
-      bCultural.textContent = data.cultural_medicinal || (data.botanical_info && data.botanical_info.cultural_medicinal) || "";
-    }
-    if (bDiagnostic) {
-      bDiagnostic.textContent = data.diagnostic_tips || (data.botanical_info && data.botanical_info.diagnostic_tips) || "";
+    // 1. Persistent Uploaded Image Display
+    if (imagePreview.src) {
+      resultDisplayImg.src = imagePreview.src;
     }
 
-    // Populate the 10 to 15 In-Depth Bullet Points
-    if (bSummaryList) {
-      bSummaryList.innerHTML = "";
-      const summaryPoints = data.comprehensive_summary || (data.botanical_info && data.botanical_info.comprehensive_summary) || [];
-      if (Array.isArray(summaryPoints) && summaryPoints.length > 0) {
-        summaryPoints.forEach((point) => {
-          const li = document.createElement("li");
-          li.textContent = point;
-          bSummaryList.appendChild(li);
-        });
+    // 2. Grad-CAM Neural Explainability Layer
+    if (data.gradcam_heatmap) {
+      resultGradcamImg.src = data.gradcam_heatmap;
+      resultGradcamImg.style.display = "none";
+      resultDisplayImg.style.display = "block";
+      gradcamControls.style.display = "flex";
+      gradcamCaption.style.display = "none";
+      btnViewOriginal.classList.add("active");
+      btnViewGradcam.classList.remove("active");
+    } else {
+      gradcamControls.style.display = "none";
+      gradcamCaption.style.display = "none";
+      resultGradcamImg.style.display = "none";
+      resultDisplayImg.style.display = "block";
+    }
+
+    // 3. Identification Hero
+    resFlowerName.textContent = commonName;
+    resScientificSubtitle.textContent = scientific ? `${scientific}` : "";
+    resFamilyPill.textContent = family;
+    resOrderPill.textContent = order;
+    resConfidencePct.textContent = confPct;
+    resConfidenceFill.style.width = `${confRatio}%`;
+
+    // 4. Probability Bars
+    renderProbabilityBars(topPredictionsList, data.top_predictions, data.predicted_class);
+
+    // 5. Botanical Intelligence Report Sections
+    const bot = data.botanical_info || {};
+    repOverview.textContent = data.overview || bot.overview || data.characteristics || "Verified botanical overview is currently unavailable.";
+    repCharacteristics.textContent = data.key_characteristics || bot.key_characteristics || data.characteristics || "Detailed morphological characteristics are unavailable.";
+    repDistribution.textContent = data.geographic_distribution || bot.geographic_distribution || data.habitat || "Geographic habitat information is unavailable.";
+    repEcological.textContent = data.ecological_importance || bot.ecological_importance || "Pollinator and ecological data are unavailable.";
+    repDiagnostic.textContent = data.diagnostic_tips || bot.diagnostic_tips || "Distinctive diagnostic guidance is unavailable.";
+
+    // 6. Common Uses Categorized Badges
+    repUsesGrid.innerHTML = "";
+    const usesObj = data.common_uses || bot.common_uses || {};
+    const useCategories = [
+      { key: "traditional", label: "🌿 Traditional Uses" },
+      { key: "ornamental", label: "🌸 Ornamental Uses" },
+      { key: "cultural", label: "🍃 Cultural Uses" },
+      { key: "environmental", label: "🌱 Environmental / Ecological" },
+      { key: "research", label: "🧪 Research Interest" },
+      { key: "commercial", label: "🏭 Commercial Uses" }
+    ];
+
+    let hasUses = false;
+    useCategories.forEach((cat) => {
+      if (usesObj[cat.key]) {
+        hasUses = true;
+        const card = document.createElement("div");
+        card.className = "use-card";
+        card.innerHTML = `
+          <span class="use-tag">${cat.label}</span>
+          <p class="use-desc">${usesObj[cat.key]}</p>
+        `;
+        repUsesGrid.appendChild(card);
       }
+    });
+
+    if (!hasUses && data.cultural_medicinal) {
+      const card = document.createElement("div");
+      card.className = "use-card";
+      card.innerHTML = `
+        <span class="use-tag">🌿 Cultural &amp; Practical Uses</span>
+        <p class="use-desc">${data.cultural_medicinal}</p>
+      `;
+      repUsesGrid.appendChild(card);
     }
 
-    // Probability breakdown
-    renderProbabilities(probList, data.top_predictions, commonName);
+    // 7. Documented Traditional & Medicinal Information
+    const medObj = data.traditional_medicinal_info || bot.traditional_medicinal_info || {};
+    medParts.textContent = medObj.plant_parts_used || "Dried blossoms, fruit receptacles, or foliage (historical records).";
+    medTraditional.textContent = medObj.documented_traditional_use || data.cultural_medicinal || "Documented in historical folk and traditional ethnobotanical records.";
+    medResearch.textContent = medObj.scientific_research_context || "Investigated in chemical literature for secondary metabolite and antioxidant profiles.";
+    medEvidence.textContent = medObj.evidence_level || "Preliminary in-vitro assays; controlled human clinical validation is limited.";
 
-    if (successBox) {
-      successBox.style.display = "flex";
-      successBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    // 8. In-Depth Botanical Points (10-15 Points)
+    repSummaryList.innerHTML = "";
+    const summaryPoints = data.comprehensive_summary || bot.comprehensive_summary || [];
+    if (Array.isArray(summaryPoints) && summaryPoints.length > 0) {
+      summaryPoints.forEach((point) => {
+        const li = document.createElement("li");
+        li.textContent = point;
+        repSummaryList.appendChild(li);
+      });
     }
+
+    // 9. Authoritative Sources List
+    repSourcesList.innerHTML = "";
+    const sources = data.authoritative_sources || bot.authoritative_sources || [
+      "Royal Botanic Gardens Kew, Plants of the World Online (POWO)",
+      "USDA Natural Resources Conservation Service (NRCS) PLANTS Database",
+      "Flora of North America / Flora of China Taxonomic Revisions"
+    ];
+    sources.forEach((src) => {
+      const li = document.createElement("li");
+      li.textContent = src;
+      repSourcesList.appendChild(li);
+    });
+
+    stateSuccess.style.display = "flex";
+    stateSuccess.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
+
+  // Grad-CAM Toggle Handlers
+  btnViewOriginal.addEventListener("click", () => {
+    btnViewOriginal.classList.add("active");
+    btnViewGradcam.classList.remove("active");
+    resultDisplayImg.style.display = "block";
+    resultGradcamImg.style.display = "none";
+    gradcamCaption.style.display = "none";
+  });
+
+  btnViewGradcam.addEventListener("click", () => {
+    btnViewGradcam.classList.add("active");
+    btnViewOriginal.classList.remove("active");
+    resultDisplayImg.style.display = "none";
+    resultGradcamImg.style.display = "block";
+    gradcamCaption.style.display = "block";
+  });
 
   /**
    * Displays uncertain/out-of-distribution rejection
    */
   function displayUncertain(data) {
     clearResults();
-    if (placeholderBox) placeholderBox.style.display = "none";
+    statePlaceholder.style.display = "none";
 
     const confPctStr = typeof data.confidence_pct === "number" ? `${data.confidence_pct.toFixed(1)}%` : data.probability_pct || "0%";
+    uncertainExplanation.textContent =
+      data.message ||
+      `The model's highest predicted probability (${confPctStr}) is below the conservative 55.0% threshold. Botanical taxonomy and medicinal data have been suppressed.`;
 
-    if (uncertainMessage) {
-      uncertainMessage.textContent =
-        data.message ||
-        `The model's highest probability (${confPctStr}) is below the conservative 55.0% threshold. Botanical taxonomy is suppressed.`;
-    }
+    renderProbabilityBars(uncertainProbBars, data.top_predictions, null);
 
-    renderProbabilities(uncertainProbList, data.top_predictions, null);
-
-    if (uncertainBox) {
-      uncertainBox.style.display = "flex";
-      uncertainBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
+    stateUncertain.style.display = "flex";
+    stateUncertain.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
   // Form Submission
@@ -357,8 +480,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Set UI loading state
     clearResults();
-    if (placeholderBox) placeholderBox.style.display = "none";
-    if (loadingBox) loadingBox.style.display = "flex";
+    statePlaceholder.style.display = "none";
+    stateLoading.style.display = "flex";
+
     btnAnalyze.disabled = true;
     const spinner = btnAnalyze.querySelector(".btn-spinner");
     const text = btnAnalyze.querySelector(".btn-text");
@@ -388,15 +512,13 @@ document.addEventListener("DOMContentLoaded", () => {
       data = await response.json();
     } catch (networkErr) {
       console.error("Fetch network error:", networkErr);
-      showError(
-        "Network Error: Unable to reach the Flask server. Please verify that 'python app.py' is running on http://127.0.0.1:5000."
-      );
+      showError("Network Error: Unable to reach the server. Please verify the Flask backend is running.");
       return;
     } finally {
-      if (loadingBox) loadingBox.style.display = "none";
+      stateLoading.style.display = "none";
       btnAnalyze.disabled = false;
       if (spinner) spinner.style.display = "none";
-      if (text) text.textContent = "Analyze Flower with CNN";
+      if (text) text.textContent = "Analyze Flower";
     }
 
     try {

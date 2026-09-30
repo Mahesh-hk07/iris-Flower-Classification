@@ -1,33 +1,34 @@
 """
 ==============================================================================
-Multi-Class Flower Image Classification - Flask Web Application
+FloraVision AI 2.0 - Botanical Intelligence & Flower Classification Server
 ==============================================================================
-This module serves the web application for multi-class flower photo classification.
-It loads the PyTorch MobileNetV2 model checkpoint (models/flower_classifier.pt)
-and verified botanical metadata (metadata/flower_metadata.json) once at startup.
+Flask backend serving real-time PyTorch MobileNetV2 image classification,
+verified botanical taxonomy, responsible medicinal/traditional information,
+technical image quality checks, and Grad-CAM neural explainability.
 
-Supported Classes:
+Supported Classes (5):
   - Hibiscus   (Family: Malvaceae)
   - Rose       (Family: Rosaceae)
   - Sunflower  (Family: Asteraceae)
   - Lotus      (Family: Nelumbonaceae)
   - Iris       (Family: Iridaceae)
 
-Conservative Rejection Mechanism:
-  - If the maximum model probability is below CONFIDENCE_THRESHOLD (0.40),
-    the model rejects the prediction as 'uncertain' rather than forcing
-    an incorrect classification.
+Conservative Rejection Safeguard:
+  - Predictions with maximum softmax probability < 0.55 (55%) are flagged as
+    uncertain/out-of-distribution, suppressing taxonomy to avoid misinformation.
 ==============================================================================
 """
 
 import os
 import io
 import json
+import base64
 import torch
 import torch.nn as nn
 from torchvision import models, transforms
-from PIL import Image
-from flask import Flask, request, jsonify, render_template
+from PIL import Image, ImageStat
+import numpy as np
+from flask import Flask, request, jsonify, render_template, send_from_directory
 
 # Initialize Flask
 app = Flask(__name__)
@@ -40,13 +41,14 @@ ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "webp"}
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "models", "flower_classifier.pt")
 METADATA_PATH = os.path.join(BASE_DIR, "metadata", "flower_metadata.json")
+RESULTS_DIR = os.path.join(BASE_DIR, "results")
 
-# Configurable Rejection / Uncertainty Threshold
+# Conservative Rejection / Uncertainty Threshold
 # With 5 classes, random baseline is 0.20 (20%).
 # Predictions below 0.55 (55%) are flagged as uncertain / unsupported.
 CONFIDENCE_THRESHOLD = 0.55
 
-# Global State
+# Global Resources
 model = None
 class_names = []
 metadata_db = {}
@@ -84,7 +86,7 @@ def load_resources_at_startup():
         norm_mean = checkpoint.get("norm_mean", [0.485, 0.456, 0.406])
         norm_std = checkpoint.get("norm_std", [0.229, 0.224, 0.225])
 
-        # Reconstruct MobileNetV2 architecture with matching head
+        # Reconstruct MobileNetV2 architecture with matching linear head
         m = models.mobilenet_v2(weights=None)
         in_features = m.last_channel
         m.classifier = nn.Sequential(
@@ -96,7 +98,7 @@ def load_resources_at_startup():
 
         model = m
 
-        # Preprocessing pipeline
+        # Preprocessing pipeline matching training specification
         image_transforms = transforms.Compose([
             transforms.Resize(256),
             transforms.CenterCrop(input_size),
@@ -113,20 +115,137 @@ def load_resources_at_startup():
         return False
 
 
-# Attempt loading on module start
+# Attempt loading on module import
 load_resources_at_startup()
 
 
 def allowed_file(filename):
     """
-    Validates file extension.
+    Validates file extension against allowed formats.
     """
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+def analyze_image_quality(pil_img, image_bytes):
+    """
+    Performs objective technical checks on uploaded image:
+    - Dimensions & Aspect Ratio
+    - Average Luminance (Exposure: Underexposed vs Overexposed)
+    - File size
+    """
+    w, h = pil_img.size
+    filesize_kb = round(len(image_bytes) / 1024, 1)
+
+    gray = pil_img.convert("L")
+    stat = ImageStat.Stat(gray)
+    mean_lum = stat.mean[0]
+    std_lum = stat.stddev[0]
+
+    notes = []
+    is_optimal = True
+
+    if w < 160 or h < 160:
+        notes.append(f"Low resolution ({w}×{h} px). Fine petal structures may be degraded.")
+        is_optimal = False
+
+    if mean_lum < 25:
+        notes.append(f"Underexposed / very dark (avg luminance {mean_lum:.1f}/255). Visual detail may be obscured.")
+        is_optimal = False
+    elif mean_lum > 240:
+        notes.append(f"Overexposed / bleached (avg luminance {mean_lum:.1f}/255). Petal colors may be washed out.")
+        is_optimal = False
+
+    if not notes:
+        notes.append("Optimal exposure and resolution for convolutional feature extraction.")
+
+    return {
+        "is_optimal": is_optimal,
+        "width": w,
+        "height": h,
+        "aspect_ratio": f"{w}:{h}",
+        "filesize_kb": filesize_kb,
+        "luminance_avg": round(mean_lum, 1),
+        "luminance_std": round(std_lum, 1),
+        "notes": notes
+    }
+
+
+def compute_gradcam(model_ref, input_tensor, original_pil_img, target_class_idx):
+    """
+    Computes genuine Grad-CAM attention heatmap from MobileNetV2's final conv layer.
+    Overlays attention heatmap on the input image as a Base64 data URL.
+    """
+    try:
+        activations = []
+        gradients = []
+
+        def forward_hook(module, inp, out):
+            activations.append(out)
+
+        def backward_hook(module, grad_in, grad_out):
+            gradients.append(grad_out[0])
+
+        target_layer = model_ref.features[-1]
+        h_f = target_layer.register_forward_hook(forward_hook)
+        h_b = target_layer.register_full_backward_hook(backward_hook)
+
+        x = input_tensor.clone().detach().requires_grad_(True)
+        with torch.enable_grad():
+            logits = model_ref(x)
+            model_ref.zero_grad()
+            score = logits[0, target_class_idx]
+            score.backward()
+
+        h_f.remove()
+        h_b.remove()
+
+        if not activations or not gradients:
+            return None
+
+        act = activations[0]  # [1, 1280, 7, 7]
+        grad = gradients[0]   # [1, 1280, 7, 7]
+
+        # Global average pool the gradients to obtain feature importance weights
+        weights = grad.mean(dim=(2, 3), keepdim=True)
+        cam = (weights * act).sum(dim=1, keepdim=True)
+        cam = torch.clamp(cam, min=0)
+        cam = nn.functional.interpolate(cam, size=(224, 224), mode="bilinear", align_corners=False)
+        cam_np = cam.squeeze().detach().cpu().numpy()
+
+        # Min-max normalization
+        c_min, c_max = cam_np.min(), cam_np.max()
+        if c_max > c_min:
+            cam_norm = (cam_np - c_min) / (c_max - c_min)
+        else:
+            cam_norm = np.zeros_like(cam_np)
+
+        # Pure NumPy jet colormap (no matplotlib runtime dependency required)
+        x_val = 4.0 * cam_norm
+        r = np.clip(1.5 - np.abs(x_val - 3.0), 0.0, 1.0)
+        g = np.clip(1.5 - np.abs(x_val - 2.0), 0.0, 1.0)
+        b = np.clip(1.5 - np.abs(x_val - 1.0), 0.0, 1.0)
+        rgb = (np.stack([r, g, b], axis=-1) * 255).astype(np.uint8)
+
+        # Resize heatmap to match original image size
+        heatmap_pil = Image.fromarray(rgb).resize(original_pil_img.size, Image.Resampling.BILINEAR)
+
+        # Blend original with 45% heatmap transparency
+        blended = Image.blend(original_pil_img.convert("RGB"), heatmap_pil, alpha=0.45)
+
+        buf = io.BytesIO()
+        blended.save(buf, format="JPEG", quality=85)
+        b64_str = base64.b64encode(buf.getvalue()).decode("utf-8")
+        return f"data:image/jpeg;base64,{b64_str}"
+
+    except Exception as e:
+        print(f"[!] Grad-CAM computation note: {e}")
+        return None
+
+
 def preprocess_image(image_bytes):
     """
-    Validates, decodes, and preprocesses uploaded image bytes.
+    Validates, decodes, and preprocesses uploaded image bytes into a PyTorch tensor.
+    Returns: (input_tensor, pil_img)
     """
     try:
         img = Image.open(io.BytesIO(image_bytes))
@@ -134,6 +253,7 @@ def preprocess_image(image_bytes):
     except Exception:
         raise ValueError("Uploaded file is corrupted or not a valid image.")
 
+    # Re-open after verify()
     img = Image.open(io.BytesIO(image_bytes))
     img = img.convert("RGB")
 
@@ -142,7 +262,7 @@ def preprocess_image(image_bytes):
 
     tensor = image_transforms(img)
     tensor = tensor.unsqueeze(0)  # Shape: [1, 3, 224, 224]
-    return tensor
+    return tensor, img
 
 
 @app.route("/", methods=["GET"])
@@ -153,22 +273,31 @@ def home():
     return render_template("index.html")
 
 
+@app.route("/results/<path:filename>", methods=["GET"])
+def serve_results(filename):
+    """
+    Serves generated evaluation artifacts (e.g. confusion matrix plot).
+    """
+    return send_from_directory(RESULTS_DIR, filename)
+
+
 @app.route("/predict", methods=["POST"])
 def predict():
     """
-    Prediction API endpoint.
+    Prediction & Botanical Intelligence API endpoint.
     Accepts multipart/form-data containing 'image'.
-    Returns structured JSON with top predictions, botanical family, and uncertainty status.
+    Returns structured JSON with top predictions, botanical intelligence report,
+    technical image quality diagnostics, and Grad-CAM neural explainability.
     """
     global model
 
-    # 1. Verify model is loaded
+    # 1. Verify model availability
     if model is None:
         success = load_resources_at_startup()
         if not success or model is None:
             return jsonify({
                 "status": "error",
-                "error": "The flower classification model is not available. Please run 'python train.py' first."
+                "error": "The flower classification model is not available. Please verify model weights."
             }), 500
 
     # 2. Verify file presence
@@ -194,7 +323,7 @@ def predict():
             "error": f"Unsupported file format. Please upload an image in one of: {allowed_list}."
         }), 400
 
-    # 4. Preprocess image
+    # 4. Read bytes & analyze technical quality
     try:
         image_bytes = file.read()
         if len(image_bytes) == 0:
@@ -203,7 +332,8 @@ def predict():
                 "error": "Uploaded image file is empty (0 bytes)."
             }), 400
 
-        input_tensor = preprocess_image(image_bytes)
+        input_tensor, pil_img = preprocess_image(image_bytes)
+        quality_info = analyze_image_quality(pil_img, image_bytes)
 
     except ValueError as ve:
         return jsonify({"status": "error", "error": str(ve)}), 400
@@ -213,7 +343,7 @@ def predict():
             "error": "Failed to process the uploaded image. Please ensure it is a valid photo."
         }), 400
 
-    # 5. Run inference
+    # 5. Run neural network inference
     try:
         with torch.no_grad():
             logits = model(input_tensor)
@@ -233,7 +363,8 @@ def predict():
                     "display_name": display,
                     "family": family,
                     "probability": round(prob_val, 4),
-                    "probability_pct": f"{prob_val * 100:.1f}%"
+                    "probability_pct": f"{prob_val * 100:.1f}%",
+                    "class_index": i
                 })
 
             # Sort descending by probability
@@ -242,10 +373,10 @@ def predict():
             best_pred = prob_list[0]
             max_prob = best_pred["probability"]
             predicted_class = best_pred["class_code"]
+            winning_idx = best_pred["class_index"]
 
-            # 6. Conservative Rejection / Uncertainty Mechanism
+            # 6. Conservative Rejection Safeguard
             if max_prob < CONFIDENCE_THRESHOLD:
-                # Reject as uncertain / unsupported
                 return jsonify({
                     "status": "uncertain",
                     "flower": None,
@@ -267,11 +398,23 @@ def predict():
                         "The subject may be an unsupported flower species or non-flower content."
                     ),
                     "top_predictions": prob_list,
-                    "botanical_info": None
+                    "image_quality": quality_info,
+                    "botanical_info": None,
+                    "gradcam_heatmap": None,
+                    "model_info": {
+                        "architecture": "MobileNetV2",
+                        "framework": "PyTorch 2.x",
+                        "input_resolution": "224×224 RGB",
+                        "supported_classes": 5,
+                        "rejection_threshold": f"{CONFIDENCE_THRESHOLD * 100:.0f}%"
+                    }
                 }), 200
 
-            # 7. Accepted Prediction
+            # 7. Accepted Prediction & Botanical Intelligence Report
             botanical_facts = metadata_db.get(predicted_class, {}) or {}
+
+            # Optional Grad-CAM explainability
+            gradcam_url = compute_gradcam(model, input_tensor, pil_img, winning_idx)
 
             return jsonify({
                 "status": "success",
@@ -290,15 +433,35 @@ def predict():
                 "cultural_medicinal": botanical_facts.get("cultural_medicinal", ""),
                 "diagnostic_tips": botanical_facts.get("diagnostic_tips", ""),
                 "comprehensive_summary": botanical_facts.get("comprehensive_summary", []),
+
+                # Enriched Botanical Intelligence Fields
+                "overview": botanical_facts.get("overview", botanical_facts.get("characteristics", "")),
+                "key_characteristics": botanical_facts.get("key_characteristics", botanical_facts.get("characteristics", "")),
+                "geographic_distribution": botanical_facts.get("geographic_distribution", botanical_facts.get("habitat", "")),
+                "ecological_importance": botanical_facts.get("ecological_importance", ""),
+                "common_uses": botanical_facts.get("common_uses", {}),
+                "traditional_medicinal_info": botanical_facts.get("traditional_medicinal_info", {}),
+                "authoritative_sources": botanical_facts.get("authoritative_sources", []),
+
                 "probability": max_prob,
                 "confidence_pct": round(max_prob * 100, 2),
                 "probability_pct": f"{max_prob * 100:.1f}%",
-                "message": f"Successfully classified as {best_pred['flower']}.",
+                "message": f"Successfully identified as {best_pred['flower']}.",
                 "top_predictions": prob_list,
-                "botanical_info": botanical_facts
+                "botanical_info": botanical_facts,
+                "image_quality": quality_info,
+                "gradcam_heatmap": gradcam_url,
+                "model_info": {
+                    "architecture": "MobileNetV2",
+                    "framework": "PyTorch 2.x",
+                    "input_resolution": "224×224 RGB",
+                    "supported_classes": 5,
+                    "rejection_threshold": f"{CONFIDENCE_THRESHOLD * 100:.0f}%"
+                }
             }), 200
 
-    except Exception:
+    except Exception as e:
+        print(f"[!] Inference runtime error: {e}")
         return jsonify({
             "status": "error",
             "error": "An internal error occurred during neural network inference."
@@ -339,7 +502,7 @@ def internal_error(error):
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    print("[*] Starting Multi-Class Flower Image Classification Server...")
+    print("[*] Starting FloraVision AI 2.0 Server...")
     print(f"[*] Rejection threshold set to: {CONFIDENCE_THRESHOLD * 100:.0f}%")
     print(f"[*] Server listening on port {port}")
     app.run(host="0.0.0.0", port=port, debug=False)

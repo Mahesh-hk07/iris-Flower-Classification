@@ -29,6 +29,31 @@
       "10. Cultural Significance: Revered as the national flower of Malaysia (Bunga Raya); sacred in Hinduism as an offering to Goddess Kali.",
       "11. Medicinal & Culinary Uses: Petals are steeped into tart, ruby-red herbal infusions (Karkadeh/sorrel) rich in vitamin C and polyphenols.",
       "12. Distinction from Rose: While colloquially called 'China Rose' in some regions, it is NOT a true rose; it belongs to Malvaceae (not Rosaceae) and has an unmistakable protruding staminal column."
+    ],
+    "overview": "Tropical evergreen flowering shrub renowned worldwide for its large, dramatic 5-petaled blossoms featuring a singular, prominent staminal column protruding far past the corolla.",
+    "key_characteristics": "Funnel-shaped actinomorphic corolla (8-18 cm wide), monadelphous stamen tube fused into a golden anther-covered cylinder, 5-lobed velvety red stigma, and alternate glossy ovate leaves with serrated margins.",
+    "geographic_distribution": "Originally indigenous to tropical southeastern Asia and southeastern China. Extensively naturalized across pantropical and warm-subtropical regions worldwide (USDA Hardiness Zones 9-11).",
+    "ecological_importance": "Major nectar and pollen provider for avian and insect pollinators, specifically adapted for ornithophily (hummingbirds, sunbirds) and entomophily (butterflies and bees).",
+    "common_uses": {
+      "traditional": "Infusions of calyces and petals steeped into tart, cooling ruby herbal beverages (Karkadeh, Agua de Jamaica).",
+      "ornamental": "Ubiquitous tropical hedge, accent shrub, and container flowering specimen in landscapes.",
+      "cultural": "National floral emblem of Malaysia (Bunga Raya); sacred Hindu offering to Goddess Kali.",
+      "environmental": "Cultivated as dense flowering boundary hedges and tropical erosion control along garden slopes.",
+      "research": "Investigated for concentrated anthocyanin polyphenols, fruit organic acids, and free-radical scavenging capacity.",
+      "commercial": "Natural red pigment colorant (E163) and botanical extract for luxury hair and skin care formulations."
+    },
+    "traditional_medicinal_info": {
+      "plant_parts_used": "Dried blossoms, floral calyces, and tender leaves.",
+      "documented_traditional_use": "Documented in Ayurvedic and traditional folk wellness systems for soothing digestive teas, cooling body heat, and hair conditioning preparations.",
+      "scientific_research_context": "Phytochemical analyses confirm rich levels of delphinidin and cyanidin anthocyanins, plus hibiscus, malic, and citric acids. Preliminary trials on related Malvaceae species observe mild vasodilatory properties.",
+      "evidence_level": "Preliminary laboratory and limited clinical evidence; not approved as medical treatment by regulatory health authorities.",
+      "safety_and_disclaimer": "Medicinal information is provided strictly for educational purposes. Traditional use does not establish clinical safety or efficacy. May interact with blood pressure medications. Always consult a qualified healthcare provider."
+    },
+    "authoritative_sources": [
+      "Royal Botanic Gardens Kew, Plants of the World Online (POWO): Hibiscus rosa-sinensis L.",
+      "USDA Natural Resources Conservation Service (NRCS) PLANTS Database.",
+      "Flora of China, Vol. 12 (Malvaceae: Hibiscus).",
+      "World Health Organization (WHO) Monographs on Selected Medicinal Plants."
     ]
   },
   "rose": {
@@ -61,6 +86,31 @@
       "10. Commercial & Cosmetic Value: Source of pure rose water and attar of roses used extensively in luxury fragrances and aromatherapy.",
       "11. National Emblem: National floral emblem of the United States, England (Tudor Rose), and the Maldives.",
       "12. Distinction from Hibiscus: True roses belong to Rosaceae (not Malvaceae); their petals are tightly spiraled and they have no monadelphous stamen tube."
+    ],
+    "overview": "Woody perennial flowering shrub or cane-climber celebrated for over five millennia for its exquisitely spiraled, fragrant blossoms and defensive thorn-like stem prickles.",
+    "key_characteristics": "Numerous tightly overlapping concentric petal whorls, cup-like hypanthium receptacle developing into a vitamin-rich rose hip, woody stems bearing prickles, and odd-pinnate serrated foliage.",
+    "geographic_distribution": "Native primarily across the temperate and subtropical regions of the Northern Hemisphere (Asia, Europe, North America, and Northwestern Africa), with over 60% of wild species indigenous to Asia.",
+    "ecological_importance": "High-value pollen source for honeybees and bumblebees; autumn-ripening rose hips serve as an essential high-energy food reservoir for migrating birds throughout winter.",
+    "common_uses": {
+      "traditional": "Distillation of fragrant petals into pure rose water and culinary preserves in Persian and European traditions.",
+      "ornamental": "The world’s most widely planted horticultural garden shrub, with more than 30,000 registered cultivars.",
+      "cultural": "Universal archetypal symbol of love, romance, poetry, and nobility; national floral emblem of the USA and England.",
+      "environmental": "Deep branching root structures stabilize soil banks; thorny thickets provide safe nesting refuges for songbirds.",
+      "research": "Extraction of natural ascorbic acid (Vitamin C), carotenoids, and antimicrobial monoterpene volatiles.",
+      "commercial": "Fine fragrance perfumery (attar of roses), luxury skincare, and culinary flavoring in confectionery."
+    },
+    "traditional_medicinal_info": {
+      "plant_parts_used": "Rose hips (pseudo-fruits), petals, and pure distilled essential oil.",
+      "documented_traditional_use": "Rose hips were historically brewed during cold seasons across Europe and North America to prevent nutritional deficiency; rose water was applied as a mild soothing facial wash.",
+      "scientific_research_context": "Rose hips are established to contain 400 to 1,700 mg of Vitamin C per 100g, alongside bioactive galactolipids (GOPO) and flavonoids under scientific investigation for joint mobility.",
+      "evidence_level": "Moderate clinical trial evidence supporting standardized rose hip powder for mild osteoarthritic discomfort; essential oil aromatherapy shows transient relaxation effects.",
+      "safety_and_disclaimer": "Educational context only. High-dose rose hip preparations may cause mild gastric irritation or interact with lithium and anticoagulants. Never replace prescribed therapy without physician consultation."
+    },
+    "authoritative_sources": [
+      "Royal Botanic Gardens Kew, Plants of the World Online (POWO): Rosa L.",
+      "USDA Agricultural Research Service (ARS) GRIN Taxonomy for Plants.",
+      "Flora of North America, Vol. 9 (Rosaceae: Rosa).",
+      "European Medicines Agency (EMA) Herbal Monograph on Rosa canina."
     ]
   },
   "sunflower": {
@@ -93,6 +143,31 @@
       "10. Indigenous Heritage: First domesticated in North America circa 2100 BCE by Indigenous peoples prior to the arrival of corn.",
       "11. National Emblem: Official national flower of Ukraine and the state flower of Kansas (The Sunflower State).",
       "12. Distinction from Others: Unmistakable giant composite disc with fibrous golden ray petals; completely distinct from single-flower blossoms like Rose or Hibiscus."
+    ],
+    "overview": "Vigorous, coarse annual plant renowned for giant composite flower heads containing thousands of individual florets exhibiting heliotropism in their immature bud stage.",
+    "key_characteristics": "Pseudanthium (composite flower head) up to 30 cm across, central disc florets packed in logarithmic Fibonacci spirals, vivid sterile yellow ray petals, thick rough-pubescent stems, and broad triangular leaves.",
+    "geographic_distribution": "Indigenous to North America; cultivated on an industrial global scale across agricultural heartlands in Europe, South America, North America, and Central Asia.",
+    "ecological_importance": "Outstanding late-season forage for pollinators, producing generous quantities of nectar and pollen; autumn seed heads sustain wild songbirds, game birds, and small mammals.",
+    "common_uses": {
+      "traditional": "Indigenous Native American tribes domesticated sunflowers circa 2100 BCE as a seed staple, flour meal, and textile dye source.",
+      "ornamental": "Striking background border annual, cut flower variety, and educational garden plant.",
+      "cultural": "Official national flower of Ukraine symbolizing solar strength; state flower of Kansas (The Sunflower State).",
+      "environmental": "Hyperaccumulating phytoremediation plant capable of absorbing lead, arsenic, and radioactive isotopes from polluted soil.",
+      "research": "Optimizing heart-healthy oleic/linoleic fatty acid profiles, natural alpha-tocopherol (Vitamin E), and seed protein isolates.",
+      "commercial": "Major international agricultural commodity producing edible vegetable cooking oil, livestock meal, and confectionery snack seeds."
+    },
+    "traditional_medicinal_info": {
+      "plant_parts_used": "Whole seeds, cold-pressed seed oil, and seed hulls.",
+      "documented_traditional_use": "Ethnobotanical records document indigenous topical poultices of crushed seeds for skin conditioning and chest compresses.",
+      "scientific_research_context": "Sunflower seed oil is proven rich in polyunsaturated linoleic acid (omega-6) or monounsaturated oleic acid (omega-9) and Vitamin E, which support cardiovascular health when substituting saturated fats.",
+      "evidence_level": "High nutritional and dietary validation for culinary seed oil; empirical traditional poultices lack modern clinical validation.",
+      "safety_and_disclaimer": "Safe for typical dietary consumption. Individuals with known allergies to Asteraceae/Compositae family plants should exercise caution. Not intended to diagnose or treat illness."
+    },
+    "authoritative_sources": [
+      "Royal Botanic Gardens Kew, Plants of the World Online (POWO): Helianthus annuus L.",
+      "USDA Natural Resources Conservation Service (NRCS) PLANTS Database: Helianthus annuus L.",
+      "Heiser, C. B. (1976). The Sunflower. University of Oklahoma Press.",
+      "FAOSTAT, Food and Agriculture Organization of the United Nations."
     ]
   },
   "lotus": {
@@ -125,6 +200,31 @@
       "10. National Floral Emblem: Official national flower of India and the Socialist Republic of Vietnam.",
       "11. Pharmacological Activity: Extracts contain alkaloids (neferine, nuciferine) possessing anti-inflammatory and cardioprotective properties.",
       "12. Distinction from Water Lily: True lotus leaves and flowers are held several feet ABOVE water on erect stems; water lily (Nymphaea) leaves float directly on the water surface."
+    ],
+    "overview": "Iconic aquatic perennial macrophyte with emergent round leaves displaying superhydrophobic self-cleaning properties and majestic solitary blossoms exhibiting metabolic thermogenesis.",
+    "key_characteristics": "Emergent peltate leaves rising high above the waterline on prickly petioles, multi-petaled pink or white flowers (15-25 cm wide), flat-topped spongy obconical seed receptacle, and thick creeping underwater rhizomes.",
+    "geographic_distribution": "Indigenous across tropical and warm-temperate Asia (India, Sri Lanka, Southeast Asia, China) and Northern Australia. Inhabits still or slow-moving freshwater wetlands, floodplains, and lakes.",
+    "ecological_importance": "Anchors sediment in freshwater wetlands, oxygenates benthic zones, provides refuge for fish and aquatic fauna, and rewards beetle pollinators with biologically generated metabolic heat (30-35°C).",
+    "common_uses": {
+      "traditional": "Extensively eaten across Asian culinary traditions: crunchy rhizomes (kamal kakdi), starchy seeds (makhana), and leaf food wrappers.",
+      "ornamental": "Premier botanical garden water garden centerpiece and sacred temple pond adornment.",
+      "cultural": "National flower of India and Vietnam; profound Dharmic emblem of spiritual awakening, non-attachment, and purity.",
+      "environmental": "Constructed wetland biofilter that absorbs excess agricultural nitrogen and phosphorus from lake water.",
+      "research": "Bio-inspired engineering of superhydrophobic surfaces modeled on nanoscale wax pillars (The Lotus Effect); alkaloid pharmacology.",
+      "commercial": "Culinary root vegetables, popped seed snacks (fox nuts), ceremonial cut blooms, and skincare extracts."
+    },
+    "traditional_medicinal_info": {
+      "plant_parts_used": "Rhizomes, seeds, plumules (embryos), leaves, and floral stamens.",
+      "documented_traditional_use": "Documented in Ayurveda (Kamala) and Traditional Chinese Medicine (Lian Zi) for cooling tea blends, soothing restlessness, and digestive nourishment.",
+      "scientific_research_context": "Extracted isoquinoline alkaloids (neferine, liensinine, isoliensinine, nuciferine) have demonstrated antioxidant, mild sedative, and vascular protective mechanisms in cell and animal assays.",
+      "evidence_level": "Promising in-vitro and animal pharmacology; large-scale human clinical trial evidence remains limited.",
+      "safety_and_disclaimer": "Culinary forms are thoroughly safe. Concentrated alkaloid extracts should be avoided during pregnancy and not combined with cardiovascular pharmaceuticals without professional medical direction."
+    },
+    "authoritative_sources": [
+      "Royal Botanic Gardens Kew, Plants of the World Online (POWO): Nelumbo nucifera Gaertn.",
+      "Flora of China, Vol. 6 (Nelumbonaceae).",
+      "Barthlott, W., & Neinhuis, C. (1997). Purity of the sacred lotus. Planta, 202(1), 1-8.",
+      "The Ayurvedic Pharmacopoeia of India, Part I, Vol. II."
     ]
   },
   "iris": {
@@ -157,6 +257,31 @@
       "10. Perfumery & Orris Root: Powdered rhizomes (orris root) yield irone, one of the most expensive and revered perfume fixatives in the world.",
       "11. State & Regional Symbols: Official flower of Tennessee and the provincial floral emblem of Quebec (Iris versicolor).",
       "12. Distinction from Others: The only flower in this system with monocot fan-shaped leaves and the tripartite 'standards and falls' architectural symmetry."
+    ],
+    "overview": "Stately perennial monocotyledonous herb renowned for its sophisticated architectural blossoms consisting of drooping outer sepals (falls) and upright inner petals (standards) emerging from sword-like leaves.",
+    "key_characteristics": "Specialized perianth triad: 3 down-curving petaloid sepals (falls), 3 upright petals (standards), 3 flattened petaloid styles arching over the stamens, and flat equitant sword-shaped (ensiform) foliage fans.",
+    "geographic_distribution": "Circumboreal across the North Temperate Zone (Europe, Northern and Central Asia, North America), thriving in moist meadows, shorelines, and boggy soils.",
+    "ecological_importance": "Critical early-season nectar source for bumblebees and long-tongued insects adapted to squeeze under the petaloid style cover; fibrous rhizome mats prevent shoreline erosion.",
+    "common_uses": {
+      "traditional": "Peeled, aged, and pulverized rhizomes (Orris root) utilized since antiquity as a violet-scented perfumed powder and linen freshener.",
+      "ornamental": "Essential classic perennial in temperate borders, cottage gardens, and water-margin plantings.",
+      "cultural": "Heraldic Fleur-de-lis emblem of French kings and chivalry; named for Iris, the Greek winged messenger of the gods.",
+      "environmental": "Wetland retention basins and rain garden filtration of urban runoff.",
+      "research": "Oxidative biosynthesis of irones (rare macrocyclic ketones that develop in rhizomes over 3+ years of curing); isoflavonoid chemistry.",
+      "commercial": "Orris butter/absolute used as an elite fixative in high-end luxury perfumes and flavoring in handcrafted dry gin."
+    },
+    "traditional_medicinal_info": {
+      "plant_parts_used": "Aged dried rhizome (Orris root) historically.",
+      "documented_traditional_use": "Mentioned in ancient Greek and Renaissance herbals as an aromatic snuff and expectorant; internal use was abandoned in modern times due to irritant emetic properties.",
+      "scientific_research_context": "Phytochemical evaluations reveal that fresh unaged iris rhizomes contain pungent acrid resin and the glycoside irisin, which act as severe gastrointestinal irritants.",
+      "evidence_level": "Internal medicinal application is obsolete and discouraged by modern toxicology; value is strictly restricted to topical perfumery and horticulture.",
+      "safety_and_disclaimer": "Fresh iris rhizomes, stems, and sap are toxic and irritating if ingested. Can cause severe vomiting and mouth irritation in humans and domestic pets. Strictly not recommended for internal medicinal use."
+    },
+    "authoritative_sources": [
+      "Royal Botanic Gardens Kew, Plants of the World Online (POWO): Iris L.",
+      "Flora of North America, Vol. 26 (Liliidae: Iridaceae: Iris).",
+      "American Horticultural Society (AHS) Plant Guide.",
+      "British Herbal Pharmacopoeia (Historical monograph on Orris root)."
     ]
   }
 }

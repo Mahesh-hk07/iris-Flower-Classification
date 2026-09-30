@@ -123,6 +123,73 @@ class TestFloraVisionApp(unittest.TestCase):
         self.assertGreaterEqual(len(summary), 10)
         self.assertLessEqual(len(summary), 15)
 
+    def test_07_gradcam_and_botanical_intelligence_payload(self):
+        """Verifies Grad-CAM heatmap, image quality metrics, and authoritative sources."""
+        rose_path = os.path.join("static", "samples", "sample_rose.jpg")
+        with open(rose_path, "rb") as f:
+            data = {"image": (f, "sample_rose.jpg")}
+            response = self.client.post("/predict", data=data, content_type="multipart/form-data")
+
+        self.assertEqual(response.status_code, 200)
+        res = json.loads(response.data.decode("utf-8"))
+        self.assertEqual(res.get("status"), "success")
+
+        # Grad-CAM heatmap
+        gradcam = res.get("gradcam_heatmap")
+        self.assertIsNotNone(gradcam)
+        self.assertTrue(gradcam.startswith("data:image/jpeg;base64,"))
+
+        # Image quality checks
+        iq = res.get("image_quality")
+        self.assertIsNotNone(iq)
+        self.assertIn("is_optimal", iq)
+        self.assertIn("width", iq)
+        self.assertIn("height", iq)
+        self.assertIn("luminance_avg", iq)
+
+        # Categorized human uses
+        uses = res.get("common_uses")
+        self.assertIsInstance(uses, dict)
+        self.assertIn("ornamental", uses)
+
+        # Authoritative sources
+        sources = res.get("authoritative_sources")
+        self.assertIsInstance(sources, list)
+        self.assertGreater(len(sources), 0)
+
+        # Traditional & medicinal context
+        med = res.get("traditional_medicinal_info")
+        self.assertIsInstance(med, dict)
+        self.assertIn("safety_and_disclaimer", med)
+
+    def test_08_serve_confusion_matrix(self):
+        """Verifies confusion matrix image endpoint is accessible."""
+        response = self.client.get("/results/confusion_matrix.png")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("image", response.content_type)
+        response.close()
+
+    def test_09_all_five_species_classified(self):
+        """Verifies each of the 5 supported sample images is processed without errors."""
+        samples = [
+            ("sample_rose.jpg", "rose"),
+            ("sample_hibiscus.jpg", "hibiscus"),
+            ("sample_sunflower.jpg", "sunflower"),
+            ("sample_lotus.jpg", "lotus"),
+            ("sample_iris.jpg", "iris")
+        ]
+        for filename, expected_class in samples:
+            path = os.path.join("static", "samples", filename)
+            self.assertTrue(os.path.exists(path), f"Missing test sample {filename}")
+            with open(path, "rb") as f:
+                data = {"image": (f, filename)}
+                response = self.client.post("/predict", data=data, content_type="multipart/form-data")
+            self.assertEqual(response.status_code, 200)
+            res = json.loads(response.data.decode("utf-8"))
+            self.assertIn(res.get("status"), ["success", "uncertain"])
+            self.assertIsInstance(res.get("top_predictions"), list)
+            self.assertEqual(len(res.get("top_predictions")), 5)
+
 if __name__ == "__main__":
     unittest.main()
 
