@@ -450,7 +450,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /**
-   * Displays uncertain/out-of-distribution rejection
+   * Displays low-confidence withheld prediction
    */
   function displayUncertain(data) {
     clearResults();

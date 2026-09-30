@@ -130,9 +130,9 @@
             <img src="{{ url_for('static', filename='samples/sample_iris.jpg') }}" alt="Iris Sample" class="sample-btn-img" loading="lazy">
             <span>🌸 Iris</span>
           </button>
-          <button type="button" class="sample-btn sample-btn-ood" data-src="{{ url_for('static', filename='samples/grey_noise_test.jpg') }}" data-name="grey_noise_test.jpg">
+          <button type="button" class="sample-btn sample-btn-low-conf" data-src="{{ url_for('static', filename='samples/grey_noise_test.jpg') }}" data-name="grey_noise_test.jpg">
             <img src="{{ url_for('static', filename='samples/grey_noise_test.jpg') }}" alt="Non-Flower Test" class="sample-btn-img" loading="lazy">
-            <span>❓ Non-Flower (OOD)</span>
+            <span>❓ Non-Flower / Noise</span>
           </button>
         </div>
       </div>
@@ -822,7 +822,7 @@
           </p>
           <h3>Our Approach</h3>
           <p>
-            By fine-tuning deep inverted residual bottleneck layers on curated botanical datasets, enforcing an empirical 55% out-of-distribution rejection threshold, providing Grad-CAM attention heatmaps, and marrying model predictions to verified scientific literature, FloraVision demonstrates how machine learning can serve scientific education without hype or fabricated claims.
+            By fine-tuning deep inverted residual bottleneck layers on curated botanical datasets, enforcing a 55% confidence rejection threshold to withhold unconfident predictions, providing Grad-CAM attention heatmaps, and marrying model predictions to verified scientific literature, FloraVision demonstrates how machine learning can serve scientific education without hype or fabricated claims.
           </p>
         </div>
 

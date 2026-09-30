@@ -1,6 +1,6 @@
 # FloraVision AI: Multi-Class Botanical Flower Image Classifier
 
-> A genuine computer-vision web application built with **PyTorch**, **MobileNetV2 Transfer Learning**, and **Flask**. Supports multi-class flower classification (**Hibiscus**, **Rose**, **Sunflower**, **Lotus**, **Iris**) from uploaded photographs, with verified botanical taxonomy and conservative out-of-distribution rejection.
+> A genuine computer-vision web application built with **PyTorch**, **MobileNetV2 Transfer Learning**, and **Flask**. Supports multi-class flower classification (**Hibiscus**, **Rose**, **Sunflower**, **Lotus**, **Iris**) from uploaded photographs, with verified botanical taxonomy and conservative low-confidence prediction withholding.
 
 ---
 
@@ -11,7 +11,7 @@ This application implements a complete, modern computer vision pipeline:
 1. **Multi-Class Botanical Coverage**: Trained on genuine photographs of 5 distinct flower classes spanning 5 separate botanical families (*Malvaceae*, *Rosaceae*, *Asteraceae*, *Nelumbonaceae*, *Iridaceae*).
 2. **Transfer Learning with MobileNetV2**: Employs deep inverted residual bottleneck layers pretrained on ImageNet-1K with botanical domain adaptation on high-level feature blocks.
 3. **Verified Botanical Metadata**: Flower families, taxonomic orders, and scientific names are retrieved strictly from a verified local database (`metadata/flower_metadata.json`), ensuring zero hallucination.
-4. **Conservative Rejection Mechanism**: A 40.0% confidence cutoff rejects low-probability or non-flower images as `"uncertain / unsupported"`, suppressing botanical metadata rather than forcing an inaccurate prediction.
+4. **Low-Confidence Rejection Safeguard**: 55% Confidence Cutoff: Maintained as configured. Inputs below this threshold are withheld because the model cannot produce a sufficiently confident prediction among the five supported classes. The threshold behavior is covered by the verification suite.
 5. **No Tabular or Numerical Measurements**: The application accepts solely real photographic inputs (`.jpg`, `.jpeg`, `.png`, `.webp`) and processes raw RGB pixels through deep convolutional layers.
 
 ---
@@ -62,18 +62,20 @@ Input Image (JPG/PNG/WEBP)
 
 ---
 
-## 4. Conservative Rejection Mechanism
+## 4. Low-Confidence Rejection Safeguard
 
-For a 5-class classifier, uniform random guessing yields $1/5 = 20\%$. An image of an unsupported flower species or non-flower object produces diffuse, ambiguous probabilities.
+For a 5-class classifier, uniform random guessing yields $1/5 = 20\%$. An ambiguous input or an unsupported subject produces diffuse probabilities across multiple classes.
 
-The backend enforces a configurable rejection threshold (`CONFIDENCE_THRESHOLD = 0.40`):
-$$\text{If } \max_{i} P(\text{class}_i) < 0.40 \implies \text{Status: "uncertain" (Rejected)}$$
+The backend enforces a configurable rejection threshold (`CONFIDENCE_THRESHOLD = 0.55`):
+$$\text{If } \max_{i} P(\text{class}_i) < 0.55 \implies \text{Status: "uncertain" (Prediction Withheld)}$$
 
-When an image is rejected:
-- Status is returned as `"uncertain"`.
-- `predicted_class` and `botanical_family` are returned as `null`.
-- The frontend suppresses the botanical taxonomy card to avoid misleading the user.
-- Candidate probabilities are shown transparently for diagnostic insight.
+- **55% Confidence Cutoff**: Maintained as configured. Inputs below this threshold are withheld because the model cannot produce a sufficiently confident prediction among the five supported classes. The threshold behavior is covered by the verification suite.
+- **Low-confidence input rejection**: A tested non-flower/noise input produced confidence below 55%, triggering prediction withholding and taxonomy suppression.
+- When an input produces confidence below the threshold:
+  - Status is returned as `"uncertain"`.
+  - `predicted_class` and `botanical_family` are returned as `null`.
+  - The frontend suppresses the botanical taxonomy card to avoid presenting unconfident or misleading predictions.
+  - Candidate probabilities are displayed transparently for diagnostic insight.
 
 ---
 
@@ -126,7 +128,7 @@ Iris Flower Classification/
 │   ├── DATASET_INFO.md        # Image catalog, licenses, and sources
 │   ├── train/                 # 47 training images across 5 classes
 │   ├── validation/            # 10 validation images
-│   └── test/                  # 16 held-out test images
+│   └── test/                  # 18 held-out test images
 │
 ├── metadata/
 │   └── flower_metadata.json   # Verified botanical taxonomy database

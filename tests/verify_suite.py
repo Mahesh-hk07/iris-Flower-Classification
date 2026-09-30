@@ -45,7 +45,7 @@ def verify_all():
     # 3. Grad-CAM Neural Attention Heatmap
     assert data.get("gradcam_heatmap") is not None
     assert data["gradcam_heatmap"].startswith("data:image/jpeg;base64,")
-    print(f"[PASS] 3. Genuine Grad-CAM Heatmap Base64 Payload ({len(data['gradcam_heatmap'])} chars)")
+    print(f"[PASS] 3. Grad-CAM Heatmap Generated and Returned as Base64 Payload ({len(data['gradcam_heatmap'])} chars)")
 
     # 4. Botanical Intelligence Dossier
     assert "overview" in data and len(data["overview"]) > 20

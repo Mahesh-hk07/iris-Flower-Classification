@@ -435,7 +435,7 @@ body {
   object-fit: cover;
 }
 
-.sample-btn-ood {
+.sample-btn-ood, .sample-btn-low-conf {
   border-style: dashed;
   background-color: #FAFAFA;
   color: var(--color-text-light);

@@ -6,7 +6,7 @@ Verifies:
 1. Web server initialization and static asset resolution.
 2. CNN inference pipeline with PyTorch MobileNetV2.
 3. Botanical metadata retrieval for Rose (Rosaceae) and Hibiscus (Malvaceae).
-4. Rejection threshold handling for out-of-distribution / uncertain images.
+4. Rejection threshold handling for low-confidence / uncertain images.
 5. Complete absence of legacy KNN, scikit-learn numerical models, or 4-feature inputs.
 ==============================================================================
 """

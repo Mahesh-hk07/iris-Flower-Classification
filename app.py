@@ -14,8 +14,8 @@ Supported Classes (5):
   - Iris       (Family: Iridaceae)
 
 Conservative Rejection Safeguard:
-  - Predictions with maximum softmax probability < 0.55 (55%) are flagged as
-    uncertain/out-of-distribution, suppressing taxonomy to avoid misinformation.
+  - Predictions with maximum softmax probability < 0.55 (55%) are withheld
+    because the model cannot produce a sufficiently confident prediction among the five supported classes.
 ==============================================================================
 """
 
@@ -43,9 +43,10 @@ MODEL_PATH = os.path.join(BASE_DIR, "models", "flower_classifier.pt")
 METADATA_PATH = os.path.join(BASE_DIR, "metadata", "flower_metadata.json")
 RESULTS_DIR = os.path.join(BASE_DIR, "results")
 
-# Conservative Rejection / Uncertainty Threshold
+# Conservative Rejection / Low-Confidence Safeguard
 # With 5 classes, random baseline is 0.20 (20%).
-# Predictions below 0.55 (55%) are flagged as uncertain / unsupported.
+# Predictions below 0.55 (55%) are withheld because the model cannot produce
+# a sufficiently confident prediction among the five supported classes.
 CONFIDENCE_THRESHOLD = 0.55
 
 # Global Resources
